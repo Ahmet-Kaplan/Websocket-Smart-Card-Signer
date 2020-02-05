@@ -86,7 +86,7 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         System.out.println("Connection to " + library);
         
         prepareWrapper();
-        pkcs11Module = Module.getInstance(library, wrapperPath);
+        pkcs11Module = Module.getInstance(wrapperPath);
         pkcs11Module.initialize(null);
         
         Slot[] slotList = pkcs11Module.getSlotList(Module.SlotRequirement.TOKEN_PRESENT);
@@ -144,9 +144,9 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         session = getSlot(slotID).getToken().openSession(Token.SessionType.SERIAL_SESSION, Token.SessionReadWriteBehavior.RO_SESSION, null, null);
         try {
             session.findObjectsInit(new X509PublicKeyCertificate());
-            iaik.pkcs.pkcs11.objects.Object[] publicKeyCertificateObjectList = session.findObjects(1024);
+            iaik.pkcs.pkcs11.objects.PKCS11Object[] publicKeyCertificateObjectList = session.findObjects(1024);
     
-            for(iaik.pkcs.pkcs11.objects.Object publicKeyCertificateObject : publicKeyCertificateObjectList){
+            for(iaik.pkcs.pkcs11.objects.PKCS11Object publicKeyCertificateObject : publicKeyCertificateObjectList){
                 X509PublicKeyCertificate publicKeyCertificate = (X509PublicKeyCertificate) publicKeyCertificateObject;
                 byte[] id = publicKeyCertificate.getId().getByteArrayValue();
                 byte[] label = publicKeyCertificate.getLabel().toString(false).getBytes();
@@ -187,9 +187,9 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         
         RSAPrivateKey privateKeyToUse = null;        
         session.findObjectsInit(new RSAPrivateKey());
-        iaik.pkcs.pkcs11.objects.Object[] privateKeyObjectList = session.findObjects(1024);
+        iaik.pkcs.pkcs11.objects.PKCS11Object[] privateKeyObjectList = session.findObjects(1024);
         
-        for(iaik.pkcs.pkcs11.objects.Object privateKeyObject : privateKeyObjectList){
+        for(iaik.pkcs.pkcs11.objects.PKCS11Object privateKeyObject : privateKeyObjectList){
             RSAPrivateKey privateKey = (RSAPrivateKey) privateKeyObject;
             byte[] id = privateKey.getId().getByteArrayValue();
             byte[] label = privateKey.getLabel().toString(false).getBytes();
@@ -224,8 +224,9 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
 
     public void disconnectLibrary(){
         try{
-            if(pkcs11Module!=null)
-                pkcs11Module.finalize(null);
+             // disabled : Look last line at https://github.com/xipki/pkcs11wrapper
+            // if(pkcs11Module!=null)
+               // pkcs11Module.finalize(null); 
         }catch(Exception e){}catch(Error e){}
         
         pkcs11Module = null;

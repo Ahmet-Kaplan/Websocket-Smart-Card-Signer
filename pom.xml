@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>df</groupId>
     <artifactId>websocket_smartcard_signer</artifactId>
@@ -12,19 +12,20 @@
     <build>
         <finalName>websocket_smartcard_signer</finalName>
         <plugins>
-            <plugin>
+<!--            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
                         <addMavenDescriptor>false</addMavenDescriptor>
                     </archive>
                 </configuration>
-            </plugin>
+            </plugin>-->
          
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <executions>
+                <version>3.2.0</version>
+<!--                <executions>
                     <execution>
                         <id>make-a-jar</id>
                         <phase>compile</phase>
@@ -32,7 +33,7 @@
                             <goal>jar</goal>
                         </goals>
                     </execution>
-                </executions>
+                </executions>-->
                 <configuration>
                     <archive>
                         <manifest>
@@ -90,15 +91,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>sign</id>
@@ -122,7 +125,7 @@
             <id>central</id>
             <name>Maven Repository Switchboard</name>
             <layout>default</layout>
-            <url>http://repo1.maven.org/maven2</url>
+            <url>https://repo1.maven.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -133,7 +136,7 @@
         <pluginRepository>
             <id>central</id>
             <name>Maven Plugin Repository</name>
-            <url>http://repo1.maven.org/maven2</url>
+            <url>https://repo1.maven.org/maven2</url>
             <layout>default</layout>
             <snapshots>
                 <enabled>false</enabled>
@@ -148,32 +151,32 @@
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-server</artifactId>
-            <version>1.13</version>
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
             <artifactId>tyrus-container-grizzly-server</artifactId>
-            <version>1.13</version>
+            <version>1.15</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
+            <version>1.1.4</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.55</version>
+            <version>1.64</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <version>1.55</version>
+            <version>1.64</version>
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
-            <version>5.5.10</version>
+            <version>5.5.13.1</version>
         </dependency>
         <dependency>
             <groupId>net.java.dev.jna</groupId>
@@ -181,24 +184,24 @@
             <version>4.5.0</version>
         </dependency>
         <dependency>
-            <groupId>iaikPkcs11Wrapper</groupId>
-            <artifactId>iaikPkcs11Wrapper</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>org.xipki.iaik</groupId>
+            <artifactId>sunpkcs11-wrapper</artifactId>
+            <version>1.4.6</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
-            <version>3.5</version>
+            <version>3.6</version>
         </dependency>
         <dependency>
             <groupId>org.pkcs11</groupId>
             <artifactId>jacknji11</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 </project>

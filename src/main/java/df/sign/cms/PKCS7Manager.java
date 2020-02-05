@@ -54,12 +54,12 @@ public class PKCS7Manager {
         CMSSignedDataWrapper cmsSignedDataWrapper = new CMSSignedDataWrapper();
 
         byte[] content = data;
-
+      
         if (data != null && isPKCS7File(data)) { // Here I have to add all the already presents signatures
             CMSSignedData cmsSignedDataOLD = new CMSSignedData(data);
             cmsSignedDataWrapper.addSignerInformation(cmsSignedDataOLD.getSignerInfos());
             cmsSignedDataWrapper.addCert(cmsSignedDataOLD.getCertificates());
-            cmsSignedDataWrapper.addCrl(cmsSignedDataOLD.getCRLs());
+            cmsSignedDataWrapper.addCrl(cmsSignedDataOLD.getEncoded());  // [AK] Previously : cmsSignedDataWrapper.addCrl(cmsSignedDataOLD.getCRLs());
             content = extractData(data);
         }
 
