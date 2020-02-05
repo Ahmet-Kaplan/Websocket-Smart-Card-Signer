@@ -86,7 +86,7 @@ public class WebSocketService {
                     config.signPdfAsP7m = parameters.getBoolean("signPdfAsP7m", false);
                     config.visibleSignature = parameters.getBoolean("visibleSignature", true);
                     config.pageNumToSign = parameters.getInt("pageNumToSign", -1);
-                    config.signPosition = parameters.getString("signPosition", "left");
+                    config.signPosition = parameters.getString("signPosition", "right");
                 }
                 
                 dataToSignList.add(new Data(id, content, config));

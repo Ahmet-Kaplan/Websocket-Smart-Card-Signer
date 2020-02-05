@@ -224,7 +224,7 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
 
     public void disconnectLibrary(){
         try{
-             // disabled : Look last line at https://github.com/xipki/pkcs11wrapper
+             // [AK] disabled : Look last line at https://github.com/xipki/pkcs11wrapper
             // if(pkcs11Module!=null)
                // pkcs11Module.finalize(null); 
         }catch(Exception e){}catch(Error e){}

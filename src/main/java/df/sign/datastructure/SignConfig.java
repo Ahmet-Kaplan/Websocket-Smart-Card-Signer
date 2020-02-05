@@ -21,6 +21,6 @@ public class SignConfig {
     public boolean signPdfAsP7m = false;
     public boolean visibleSignature = true;
     public int pageNumToSign = -1;
-    public String signPosition = "left";
+    public String signPosition = "right";
     public boolean saveAsPDF = true;
 }
