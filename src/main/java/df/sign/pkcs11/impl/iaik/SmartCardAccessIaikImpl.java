@@ -38,6 +38,7 @@ import df.sign.pkcs11.CertificateData;
 import df.sign.pkcs11.SmartCardAccessI;
 import df.sign.utils.IOUtils;
 import df.sign.utils.X509Utils;
+import java.util.Locale;
 
 public class SmartCardAccessIaikImpl implements SmartCardAccessI{
     
@@ -49,7 +50,7 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         if(wrapperPath!=null)
             return;
         
-        String OS = System.getProperty("os.name").toLowerCase();
+        String OS = System.getProperty("os.name").toLowerCase(new Locale("tr", "TR"));
         String JVMArch = System.getProperty("os.arch");
         String wrapperName = "";
         

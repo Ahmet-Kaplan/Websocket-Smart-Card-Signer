@@ -39,6 +39,7 @@ import org.bouncycastle.util.io.TeeOutputStream;
 import df.sign.pkcs11.CertificateData;
 import df.sign.utils.StringUtils;
 import df.sign.utils.X509Utils;
+import java.util.Locale;
 
 @SuppressWarnings("restriction")
 public class SignUtils {
@@ -127,12 +128,12 @@ public class SignUtils {
         if(new File(pkcs11Library).exists())
             return pkcs11Library;
         
-        String OS = System.getProperty("os.name").toLowerCase();
+        String OS = System.getProperty("os.name").toLowerCase(new Locale("tr", "TR"));
         
         String[] pathList = new String[0];
         
         if(OS.contains("windows")){
-            if(pkcs11Library.toLowerCase().endsWith("dll")){
+            if(pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("dll")){
                 String systemRoot = System.getenv("SystemRoot");
                 String programFiles = System.getenv("ProgramFiles");
                 pathList = new String[]{
@@ -143,7 +144,7 @@ public class SignUtils {
                 };
             }
         } else {
-            if(pkcs11Library.toLowerCase().endsWith("so") || pkcs11Library.toLowerCase().endsWith("dylib")){
+            if(pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("so") || pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("dylib")){
                 pathList = new String[]{
                     "/usr/lib/" + pkcs11Library,
                     "/usr/lib/pkcs11/" + pkcs11Library,

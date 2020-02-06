@@ -46,6 +46,7 @@ import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.PdfStamper;
 import com.itextpdf.text.pdf.PdfString;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.util.Locale;
 
 public class PDFManager {
 
@@ -77,9 +78,9 @@ public class PDFManager {
             numPage = numPages;
         Rectangle posArea = null;
         if (signPosition != null && !signPosition.equals("")) {
-            if (signPosition.toLowerCase().equals("left"))
+            if (signPosition.toLowerCase(new Locale("tr", "TR")).equals("left"))
                 posArea = new Rectangle(110, 160, 170, 200);
-            if (signPosition.toLowerCase().equals("right"))
+            if (signPosition.toLowerCase(new Locale("tr", "TR")).equals("right"))
                 posArea = new Rectangle(440, 160, 500, 200);
         } else
             posArea = getFreeArea(numPage, reader);
@@ -232,7 +233,7 @@ public class PDFManager {
                 java.security.cert.Certificate cert = certList[0];
 
                 X509Certificate x509Certificate = X509Utils.getX509Certificate(cert.getEncoded());
-                if (x509Certificate.getSubjectDN().getName().toLowerCase().contains(userCF.toLowerCase())) {
+                if (x509Certificate.getSubjectDN().getName().toLowerCase(new Locale("tr", "TR")).contains(userCF.toLowerCase(new Locale("tr", "TR")))) {
                     if (!userCertList.contains(x509Certificate))
                         userCertList.add(x509Certificate);
                     signNameOkList.add(signName);
