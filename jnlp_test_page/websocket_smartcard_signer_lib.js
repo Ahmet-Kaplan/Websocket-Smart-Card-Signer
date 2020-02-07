@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>. 
  */
 var websocket_smartcard_signer = {
+  _certId : null,
+  _Pin : null,
   _dataToSignList : [],
   _dllList : [],
   _statusLog : [],
@@ -34,6 +36,26 @@ var websocket_smartcard_signer = {
       return this;
   },
   
+  addcertId : function(certId) {
+      this._certId.push(certId);
+      return this;
+  },
+  
+  cleancertId : function(){
+      this._certId = [];
+      return this;
+  },
+
+  addPin : function(Pin) {
+      this._Pin.push(Pin);
+      return this;
+  },
+  
+  cleanpin : function(){
+      this._Pin = [];
+      return this;
+  },
+
   addDll : function(dllPath) {
       this._dllList.push(dllPath);
       return this;
@@ -81,7 +103,7 @@ var websocket_smartcard_signer = {
   },
   
   sign : function(resultsHandler, errorHandler){
-      var wsEndpoint = 'ws://127.0.0.1:8765/websockets/sign';
+      var wsEndpoint = 'ws://127.0.0.1:38765/websockets/sign';
       if(!(resultsHandler instanceof Function))
           throw 'The sign paramenter must be a function';
       var signService = new WebSocket(wsEndpoint);
@@ -97,6 +119,8 @@ var websocket_smartcard_signer = {
       }.bind(this);
       signService.onopen = function(){
           var data = {
+	      certId : this._certId,
+	      Pin : this._Pin,
               dllList : this._dllList,
               dataToSign : this._dataToSignList
           };
@@ -108,6 +132,64 @@ var websocket_smartcard_signer = {
           this._log('Connection closed');
       }.bind(this);
       signService.onerror = function(){
+          this._log('Connection error: the WebSocket service ' + wsEndpoint + ' can not be reached.');
+          throw 'Connection error: the WebSocket service ' + wsEndpoint + ' can not be reached.';
+      }.bind(this);
+      return this;
+  },
+  
+  certificates : function(resultsHandler, errorHandler){
+      var wsEndpoint = 'ws://127.0.0.1:38765/websockets/certificates';
+      if(!(resultsHandler instanceof Function))
+          throw 'The certificates paramenter must be a function';
+      var certService = new WebSocket(wsEndpoint);
+      this._log('WebSocket client created');
+      certService.onmessage = function(event){
+          this._log('Data received from WebSocket: ' + event.data);
+          var dataJson = JSON.parse(event.data);
+          if(dataJson.error != null)
+              errorHandler(dataJson.error);
+          else
+              resultsHandler(dataJson.dataSigned);
+          certService.close();
+      }.bind(this);
+      certService.onopen = function(){
+          certService.send();
+          this._log('Data sent to WebSocket: ' + dataS);
+      }.bind(this);
+      certService.onclose = function(){
+          this._log('Connection closed');
+      }.bind(this);
+      certService.onerror = function(){
+          this._log('Connection error: the WebSocket service ' + wsEndpoint + ' can not be reached.');
+          throw 'Connection error: the WebSocket service ' + wsEndpoint + ' can not be reached.';
+      }.bind(this);
+      return this;
+  },
+  
+    getHelp : function(resultsHandler, errorHandler){
+      var wsEndpoint = 'ws://127.0.0.1:38765/websockets/showHelp';
+      if(!(resultsHandler instanceof Function))
+          throw 'The certificates paramenter must be a function';
+      var helpService = new WebSocket(wsEndpoint);
+      this._log('WebSocket client created');
+      helpService.onmessage = function(event){
+          this._log('Data received from WebSocket: ' + event.data);
+          var dataJson = JSON.parse(event.data);
+          if(dataJson.error != null)
+              errorHandler(dataJson.error);
+          else
+              resultsHandler(dataJson.dataSigned);
+          helpService.close();
+      }.bind(this);
+      helpService.onopen = function(){
+          helpService.send();
+          this._log('Data sent to WebSocket: ' + dataS);
+      }.bind(this);
+      helpService.onclose = function(){
+          this._log('Connection closed');
+      }.bind(this);
+      helpService.onerror = function(){
           this._log('Connection error: the WebSocket service ' + wsEndpoint + ' can not be reached.');
           throw 'Connection error: the WebSocket service ' + wsEndpoint + ' can not be reached.';
       }.bind(this);

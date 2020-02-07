@@ -9,8 +9,8 @@ import df.sign.pkcs11.CertificateData;
 import df.sign.utils.IOUtils;
 import java.util.ArrayList;
 import javax.json.Json;
-import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -22,7 +22,7 @@ import javax.websocket.server.ServerEndpoint;
  *
  * @author akaplan
  */
-@ServerEndpoint(value = "/showhelp")
+@ServerEndpoint(value = "/showHelp")
 public class showHelp {
 
     private Session session = null;
@@ -61,10 +61,9 @@ public class showHelp {
                 certList = signEngine.loadSmartCardCertificateList(readAllCertificates).certificateList;
             } catch (Exception e) {
                 e.printStackTrace();
-                SignUtils.playBeeps(1);
             }
 
-            JsonArrayBuilder helpList = Json.createArrayBuilder();
+            JsonObjectBuilder helpList = Json.createObjectBuilder();
 
             String[] dllList = signEngine.dllList;
 
@@ -76,10 +75,9 @@ public class showHelp {
                     conflicts += "- " + conflictJAR + "\n";
                 }
             }
-            helpList.add("Conflicts: " + conflicts);
-            helpList.add("---");
+            helpList.add("Conflicts",conflicts);
 
-            helpList.add("LIBRARY NAME \t STATUS \t SMARTCARD TYPE");
+            String libraries = "LIBRARY NAME \t STATUS \t SMARTCARD TYPE\n";
 
             String tableList = "";
             for (int i = 0; i < dllList.length; i++) {
@@ -87,15 +85,14 @@ public class showHelp {
                 tableList += dllList[i] + "\t";
                 tableList += (SignUtils.getLibraryFullPath(dllList[i]) != null) ? "INSTALLED" : "NOT INSTALLED" + "\t";
                 tableList += (SignUtils.getCardTypeFromDLL(dllList[i]) != "") ? SignUtils.getCardTypeFromDLL(dllList[i]) : "NOT MANAGED" + "\t";
-                helpList.add(tableList);
+                libraries += (tableList+"\n");
             }
-            helpList.add("---");
+            helpList.add("Libraries",libraries);
 
-            helpList.add("CONNECTED SMARTCARD INFOS:");
+            String smartcardInfo;
 
-            String smartcardInfo = "";
             ArrayList<String> cardATRList = SignUtils.getConnectedCardATR();
-            if (cardATRList.size() == 0) {
+            if (cardATRList.isEmpty()) {
                 smartcardInfo = "SMARTCARD NOT CONNECTED\n";
             } else {
                 smartcardInfo = "CONNECTED SMARTCARDS:\n";
@@ -110,7 +107,7 @@ public class showHelp {
                         String correctLibrary = "";
                         for (String cardInfoDll : cardInfoDllList) {
                             String dllFullPath = SignUtils.getLibraryFullPath(cardInfoDll);
-                            if (dllFullPath != "") {
+                            if (!dllFullPath.isEmpty()) {
                                 correctLibrary = dllFullPath;
                                 break;
                             }
@@ -124,11 +121,10 @@ public class showHelp {
                 }
             }
 
-            helpList.add(smartcardInfo);
-            helpList.add("---");
-            helpList.add("LOGS");
+            helpList.add("Smartcards",smartcardInfo);
+
             try {
-                helpList.add(new String(IOUtils.readFile(SignUtils.logFilePath)));
+                helpList.add("Logs",new String(IOUtils.readFile(SignUtils.logFilePath)));
             } catch (Exception e) {
             }
 

@@ -34,7 +34,6 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 import df.sign.SignFactory;
-import df.sign.SignUI;
 import df.sign.SignUtils;
 import df.sign.datastructure.Data;
 import df.sign.datastructure.SignConfig;
@@ -62,6 +61,17 @@ public class WebSocketService {
     public String startSignProcess(String message, Session session) {
         try{
             JsonObject jsonObject = Json.createReader(new StringReader(message)).readObject();
+            
+            if(jsonObject.getValueType()!=ValueType.OBJECT)
+                    throw new Exception("Expected Json Object");
+            
+            JsonObject certInfo = jsonObject.getJsonObject("certInfo");
+            if(certInfo == null) 
+                throw new Exception("Expected certInfo data");
+            
+            String certId = certInfo.getString("certId");
+            String certPin = certInfo.getString("pin");
+            
             JsonArray dataToSignArray = jsonObject.getJsonArray("dataToSign");
             JsonArray dllList = jsonObject.getJsonArray("dllList");
             String[] pkcs11DllList = null;
@@ -92,7 +102,7 @@ public class WebSocketService {
                 dataToSignList.add(new Data(id, content, config));
             }
 
-            List<Data> dataSignedList = SignFactory.performSign(dataToSignList, pkcs11DllList);
+            List<Data> dataSignedList = SignFactory.performSign(certId, certPin, dataToSignList, pkcs11DllList);
             
             JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
             for(Data dataSigned : dataSignedList){
@@ -107,7 +117,6 @@ public class WebSocketService {
             
         }catch(Exception ex){
             ex.printStackTrace();
-            SignUI.showErrorMessage(ex.getMessage());
             return "{\"error\" : \""+ex.getMessage().replace("\"", "\\\"").replace("\\", "\\\\")+"\"}";
         } finally {
             //SignFactory.getUniqueWebSocketServer().terminate();

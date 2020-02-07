@@ -8,22 +8,13 @@ package df.sign;
 import df.sign.pkcs11.CertificateData;
 import df.sign.utils.X509Utils;
 import java.util.Locale;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
 
 /**
  *
  * @author akaplan
  */
-@ServerEndpoint(value = "/signature")
 public class pdfSign {
 
-    private Session session = null;
-    
     public SignEngine signEngine = null;
 
     public boolean readAllCertificates = false;
@@ -33,30 +24,12 @@ public class pdfSign {
         this.signEngine = signEngine;
     }
 
-    public void sendTestData() {
-        session.getAsyncRemote().sendText("{\"certificates\" : []}");
-    }
-
-    @OnOpen
-    public void open(Session session) {
-        this.session = session;
-    }
-
-    @OnClose
-    public void onClose(Session session) {
-    }
-
-    @OnError
-    public void onError(Throwable exception, Session session) {
-    }
-
-    @OnMessage
-    public String sign(String certID, String pin) {
+    public String sign(String certID, String pin) throws Exception {
 
         String certValid = isCertificateCorrect(certID);
 
         if (!certValid.isEmpty()) {
-            return certValid;
+            throw new Exception(certValid);
         }
 
         CertificateData certData = SignUtils.getCertificateDataByID(certID, signEngine.certificateList);
@@ -64,7 +37,7 @@ public class pdfSign {
         if (certData == null) {
             if (signEngine.getNumDataToSign() == 0) {
                 // JOptionPane.showMessageDialog(null, "NO DATA TO SIGN", "ERROR", JOptionPane.ERROR_MESSAGE);
-                return "ERROR : NO DATA TO SIGN";
+                throw new Exception("ERROR : NO DATA TO SIGN");
             }
 
             try {
@@ -72,13 +45,14 @@ public class pdfSign {
                 return "";
             } catch (Exception e) {
                 e.printStackTrace();
-                return "ERROR : ERROR DURING THE SIGNING PROCESS:\n" + e.getMessage();
+                throw new Exception("ERROR DURING THE SIGNING PROCESS:\n" + e.getMessage());
             }
         }
+
         return "";
     }
-    
-private String isCertificateCorrect(String certID) {
+
+    private String isCertificateCorrect(String certID) {
         CertificateData certData = SignUtils.getCertificateDataByID(certID, signEngine.certificateList);
 
         if (certData == null) {
@@ -118,5 +92,3 @@ private String isCertificateCorrect(String certID) {
         return "";
     }
 }
-
-

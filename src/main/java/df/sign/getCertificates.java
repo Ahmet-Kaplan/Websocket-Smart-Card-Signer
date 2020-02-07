@@ -19,10 +19,10 @@ package df.sign;
 
 import java.util.ArrayList;
 import df.sign.pkcs11.CertificateData;
-import df.sign.utils.IOUtils;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -60,7 +60,6 @@ public class getCertificates {
         this.signEngine = signEngine;
     }
 
-    
     @OnMessage
     public String getCertificates(String message, Session session) {
         try {
@@ -70,13 +69,21 @@ public class getCertificates {
                 certList = signEngine.loadSmartCardCertificateList(readAllCertificates).certificateList;
             } catch (Exception e) {
                 e.printStackTrace();
-                SignUtils.playBeeps(1);
             }
 
             JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-            for (CertificateData cert : certList) {
-                String certLABEL = new String(SignUtils.base64Encode(cert.certLABEL), "UTF-8");
-                jsonArrayBuilder.add(Json.createObjectBuilder().add("id", cert.id).add("LABEL", certLABEL));
+            JsonObjectBuilder certParams = Json.createObjectBuilder();
+            for (CertificateData certItem : certList) {
+                // Certificate Informations such as ID and Label
+                certParams = Json.createObjectBuilder();
+                certParams.add("id", certItem.id);
+                certParams.add("Label", new String(SignUtils.base64Encode(certItem.certLABEL), "UTF-8"));
+                certParams.add("SubjectDN", certItem.cert.getSubjectDN().getName());
+                certParams.add("IssuerDN", certItem.cert.getIssuerDN().getName());
+                certParams.add("StartDate", certItem.cert.getNotBefore().toString());
+                certParams.add("ExpiredDate", certItem.cert.getNotAfter().toString());
+                certParams.add("SerialNumber", certItem.cert.getSerialNumber());
+                jsonArrayBuilder.add(certParams);
             }
 
             JsonObject ret = Json.createObjectBuilder().add("certificates", jsonArrayBuilder).build();
@@ -92,77 +99,4 @@ public class getCertificates {
         }
     }
 
-    
-
-    public ArrayList<String> showHelp() {
-
-        ArrayList<String> helpList = new ArrayList<String>();
-
-        String[] dllList = signEngine.dllList;
-
-        String conflicts = "No JAR conflicts identified";
-        String[] conflictJARList = SignUtils.checkJarConflicts();
-        if (conflictJARList.length != 0) {
-            conflicts = "";
-            for (String conflictJAR : conflictJARList) {
-                conflicts += "- " + conflictJAR + "\n";
-            }
-        }
-        helpList.add("Conflicts: " + conflicts);
-        helpList.add("---");
-
-        helpList.add("LIBRARY NAME \t STATUS \t SMARTCARD TYPE");
-
-        String tableList = "";
-        for (int i = 0; i < dllList.length; i++) {
-            tableList = "";
-            tableList += dllList[i] + "\t";
-            tableList += (SignUtils.getLibraryFullPath(dllList[i]) != null) ? "INSTALLED" : "NOT INSTALLED" + "\t";
-            tableList += (SignUtils.getCardTypeFromDLL(dllList[i]) != "") ? SignUtils.getCardTypeFromDLL(dllList[i]) : "NOT MANAGED" + "\t";
-            helpList.add(tableList);
-        }
-        helpList.add("---");
-
-        helpList.add("CONNECTED SMARTCARD INFOS:");
-
-        String smartcardInfo = "";
-        ArrayList<String> cardATRList = SignUtils.getConnectedCardATR();
-        if (cardATRList.size() == 0) {
-            smartcardInfo = "SMARTCARD NOT CONNECTED\n";
-        } else {
-            smartcardInfo = "CONNECTED SMARTCARDS:\n";
-            for (String cardATR : cardATRList) {
-                String[] cardInfo = SignUtils.getCardInfo(cardATR);
-                if (cardInfo == null) {
-                    smartcardInfo += "- UNKNOWN. ATR: " + cardATR + "\n";
-                } else {
-                    smartcardInfo += "- " + cardInfo[0] + "\tPKCS11: ";
-                    String[] cardInfoDllList = cardInfo[1].split("%");
-                    String urlDllInstaller = cardInfo[3];
-                    String correctLibrary = "";
-                    for (String cardInfoDll : cardInfoDllList) {
-                        String dllFullPath = SignUtils.getLibraryFullPath(cardInfoDll);
-                        if (dllFullPath != "") {
-                            correctLibrary = dllFullPath;
-                            break;
-                        }
-                    }
-                    if (correctLibrary == "") {
-                        smartcardInfo += "NOT INSTALLED-> " + dllList[0] + " DOWNLOAD URL: " + urlDllInstaller + "\n";
-                    } else {
-                        smartcardInfo += "INSTALLED->" + correctLibrary + "\n";
-                    }
-                }
-            }
-        }
-
-        helpList.add(smartcardInfo);
-        helpList.add("---");
-        helpList.add("LOGS");
-        try {
-            helpList.add(new String(IOUtils.readFile(SignUtils.logFilePath)));
-        } catch (Exception e) {
-        }
-        return helpList;
-    }
 }

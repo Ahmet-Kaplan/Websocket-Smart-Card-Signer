@@ -24,7 +24,7 @@ import org.glassfish.tyrus.server.Server;
 
 public class WebSocketServer extends Thread {
 
-    public final static int defaultPort = 8765;
+    public final static int defaultPort = 38765;
     private Server server = null;
     
     private int port = -1;

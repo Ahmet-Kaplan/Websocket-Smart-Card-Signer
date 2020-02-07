@@ -246,18 +246,6 @@ public class SignUtils {
         return null;
     }
     
-    public static void playBeeps(int numBeeps){
-        if(numBeeps<0)
-            return;
-        
-        for(int i=0;i<numBeeps;i++){
-            java.awt.Toolkit.getDefaultToolkit().beep();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {} 
-        }
-    }
-    
     public static byte[] base64Encode(byte[] data){
         return org.bouncycastle.util.encoders.Base64.encode(data);
     }

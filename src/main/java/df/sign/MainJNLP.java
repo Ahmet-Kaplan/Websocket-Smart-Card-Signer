@@ -23,10 +23,9 @@ public class MainJNLP {
         try{
             SignUtils.initLog();
             SignFactory.getUniqueWebSocketServer().serverThreadStart();
-            SignFactory.getUniqueUI().createTrayIcon();
+            //SignFactory.getUniqueUI().createTrayIcon();
         }catch(Exception ex){
             ex.printStackTrace();
-            SignUI.showErrorMessage(ex.getMessage());
         }
     }
 }

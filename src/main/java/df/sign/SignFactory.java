@@ -20,7 +20,6 @@ package df.sign;
 import java.util.List;
 
 import df.sign.datastructure.Data;
-import df.sign.pkcs11.CertificateData;
 import df.sign.pkcs11.SmartCardAccessManagerFactory;
 import df.sign.pkcs11.SmartCardAccessManagerFactory.PKCS11AccessMethod;
 import df.sign.server.WebSocketServer;
@@ -28,31 +27,34 @@ import df.sign.server.WebSocketServer;
 public class SignFactory {
 
     public static PKCS11AccessMethod pkcs11AccessMethod = SmartCardAccessManagerFactory.PKCS11AccessMethod.JNA;
-    
+
     private static SignEngine signEngine = null;
-    private static SignUI signUI = null;
+    private static pdfSign pdfsign = null;
     private static WebSocketServer webSocketServer = null;
-    
-    public static SignUI getUniqueUI() throws Exception{
-        if(signUI == null)
-            signUI = new SignUI(getUniqueEngine());
-        return signUI;
+
+    public static pdfSign getUniquePDFSign() throws Exception {
+        if (pdfsign == null) {
+            pdfsign = new pdfSign(getUniqueEngine());
+        }
+        return pdfsign;
     }
-    
-    public static SignEngine getUniqueEngine() throws Exception{
-        if(signEngine == null)
+
+    public static SignEngine getUniqueEngine() throws Exception {
+        if (signEngine == null) {
             signEngine = new SignEngine(SmartCardAccessManagerFactory.getSmartCardAccessManager(pkcs11AccessMethod), SignUtils.standardDllList);
+        }
         return signEngine;
     }
-    
-    public static WebSocketServer getUniqueWebSocketServer(){
-        if(webSocketServer == null)
+
+    public static WebSocketServer getUniqueWebSocketServer() {
+        if (webSocketServer == null) {
             webSocketServer = new WebSocketServer(WebSocketServer.defaultPort);
+        }
         return webSocketServer;
     }
-    
-    public static WebSocketServer getNewWebSocketServer(){
-        if(webSocketServer != null){
+
+    public static WebSocketServer getNewWebSocketServer() {
+        if (webSocketServer != null) {
             webSocketServer.terminate();
             webSocketServer.waitTermination();
             webSocketServer = null;
@@ -60,41 +62,25 @@ public class SignFactory {
         webSocketServer = new WebSocketServer(WebSocketServer.defaultPort);
         return webSocketServer;
     }
-    
-    public static List<Data> performSign(List<Data> dataToSignList) throws Exception{
-        return performSign(dataToSignList, null);
+
+    public static List<Data> performSign(String certId, String Pin, List<Data> dataToSignList) throws Exception {
+        return performSign(certId, Pin, dataToSignList, null);
     }
-    
-    public static List<Data> performSign(List<Data> dataToSignList, String[] dllList) throws Exception{
-        if(dllList!=null && dllList.length!=0)
+
+    public static List<Data> performSign(String certId, String Pin, List<Data> dataToSignList, String[] dllList) throws Exception {
+        if (dllList != null && dllList.length != 0) {
             SignFactory.getUniqueEngine().dllList = dllList;
+        }
+
         SignFactory.getUniqueEngine().cleanDataToSign().loadDataToSign(dataToSignList);
-        SignUI signUi = SignFactory.getUniqueUI();
-        CertificateData certificateData = signUi.showCertificateDialog();
-        if(certificateData == null)
-            throw new Exception("Process aborted");
-        String pin = SignUI.askForPIN();
-        if(pin == null)
-            throw new Exception("Process aborted");
-        signUi.sign(certificateData, pin);
+
+        pdfsign = SignFactory.getUniquePDFSign();
+
+        pdfsign.sign(certId, Pin);
+
         List<Data> signedDataList = SignFactory.getUniqueEngine().getSignedData();
+
         return signedDataList;
     }
-    
-    public static void performSignLocally(){
-        performSignLocally(null);
-    }
-    
-    public static void performSignLocally(String[] dllList){
-        try {
-            List<Data> dataToSignList = SignUI.showFileSelection();
-            if(dataToSignList == null)
-                throw new Exception("Process aborted");
-            List<Data> dataSignedList = SignFactory.performSign(dataToSignList, dllList);
-            SignUI.showFileSave(dataSignedList);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            SignUI.showErrorMessage(ex.getMessage());
-        }
-    }
+
 }
