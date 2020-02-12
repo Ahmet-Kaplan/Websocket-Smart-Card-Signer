@@ -3,57 +3,34 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package df.sign;
+package df.sign.server;
 
+import df.sign.SignEngine;
+import df.sign.SignUtils;
 import df.sign.pkcs11.CertificateData;
 import df.sign.utils.IOUtils;
 import java.util.ArrayList;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
+import spark.Request;
+import spark.Response;
 
 /**
  *
  * @author akaplan
  */
-@ServerEndpoint(value = "/showHelp")
-public class showHelp {
-
-    private Session session = null;
-
-    public void sendTestData() {
-        session.getAsyncRemote().sendText("{\"HelpList\" : []}");
-    }
-
-    @OnOpen
-    public void open(Session session) {
-        this.session = session;
-    }
-
-    @OnClose
-    public void onClose(Session session) {
-    }
-
-    @OnError
-    public void onError(Throwable exception, Session session) {
-    }
+public class showInfo {
 
     public SignEngine signEngine = null;
 
     public boolean readAllCertificates = false;
 
-    public showHelp(SignEngine signEngine) {
+    public showInfo(SignEngine signEngine) {
         this.signEngine = signEngine;
     }
 
-    @OnMessage
-    public String showHelp(String message, Session session) {
+    public String showHelp(Request request, Response response) {
         try {
 
             ArrayList<CertificateData> certList = new ArrayList<CertificateData>();
@@ -63,7 +40,7 @@ public class showHelp {
                 e.printStackTrace();
             }
 
-            JsonObjectBuilder helpList = Json.createObjectBuilder();
+            JsonObjectBuilder infoList = Json.createObjectBuilder();
 
             String[] dllList = signEngine.dllList;
 
@@ -75,20 +52,20 @@ public class showHelp {
                     conflicts += "- " + conflictJAR + "\n";
                 }
             }
-            helpList.add("Conflicts",conflicts);
+            infoList.add("Conflicts", conflicts);
 
-            String libraries = "LIBRARY NAME \t STATUS \t SMARTCARD TYPE\n";
+            JsonObjectBuilder libraries ;
 
-            String tableList = "";
             for (int i = 0; i < dllList.length; i++) {
-                tableList = "";
-                tableList += dllList[i] + "\t";
-                tableList += (SignUtils.getLibraryFullPath(dllList[i]) != null) ? "INSTALLED" : "NOT INSTALLED" + "\t";
-                tableList += (SignUtils.getCardTypeFromDLL(dllList[i]) != "") ? SignUtils.getCardTypeFromDLL(dllList[i]) : "NOT MANAGED" + "\t";
-                libraries += (tableList+"\n");
+                if (SignUtils.getLibraryFullPath(dllList[i]) != null) {
+                    libraries = Json.createObjectBuilder();
+                    libraries.add("File name", dllList[i]);
+                    libraries.add("Card Type",
+                            ((SignUtils.getCardTypeFromDLL(dllList[i]) != "") ? SignUtils.getCardTypeFromDLL(dllList[i]) : "NOT MANAGED"));
+                    infoList.add("Libraries", libraries);
+                }
             }
-            helpList.add("Libraries",libraries);
-
+           
             String smartcardInfo;
 
             ArrayList<String> cardATRList = SignUtils.getConnectedCardATR();
@@ -121,17 +98,15 @@ public class showHelp {
                 }
             }
 
-            helpList.add("Smartcards",smartcardInfo);
+            infoList.add("Smartcards", smartcardInfo);
 
             try {
-                helpList.add("Logs",new String(IOUtils.readFile(SignUtils.logFilePath)));
+                infoList.add("Logs", new String(IOUtils.readFile(SignUtils.logFilePath)));
             } catch (Exception e) {
             }
 
-            JsonObject ret = Json.createObjectBuilder().add("HelpList", helpList).build();
-            String retS = ret.toString();
-
-            return retS;
+            JsonObject ret = Json.createObjectBuilder().add("HelpList", infoList).build();
+            return ret.toString();
 
         } catch (Exception ex) {
             ex.printStackTrace();

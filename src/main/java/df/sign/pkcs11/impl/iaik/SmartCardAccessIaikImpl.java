@@ -26,9 +26,6 @@ import iaik.pkcs.pkcs11.objects.RSAPrivateKey;
 import iaik.pkcs.pkcs11.objects.X509PublicKeyCertificate;
 import iaik.pkcs.pkcs11.wrapper.PKCS11Constants;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,8 +33,8 @@ import java.util.Arrays;
 import df.sign.SignUtils;
 import df.sign.pkcs11.CertificateData;
 import df.sign.pkcs11.SmartCardAccessI;
-import df.sign.utils.IOUtils;
 import df.sign.utils.X509Utils;
+import java.io.File;
 import java.util.Locale;
 
 public class SmartCardAccessIaikImpl implements SmartCardAccessI{
@@ -56,31 +53,28 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         
         if(OS.startsWith("windows")){
             if(JVMArch.equals("x86"))
-                wrapperName = "PKCS11Wrapper32.dll";
+                wrapperName = "C:\\WINDOWS\\system32\\PKCS11Wrapper32.dll";
             else
-                wrapperName = "PKCS11Wrapper64.dll";
+                wrapperName = "C:\\WINDOWS\\system32\\PKCS11Wrapper64.dll";
         }
         if(OS.startsWith("linux")){
             if(JVMArch.contains("64"))
-                wrapperName = "libpkcs11wrapper64.so";
+                wrapperName = "	/usr/lib/libpkcs11wrapper64.so";
             else
-                wrapperName = "libpkcs11wrapper32.so";
+                wrapperName = "	/usr/lib/libpkcs11wrapper32.so";
         }
         if(OS.startsWith("mac"))
-            wrapperName = "libpkcs11wrapper.jnilib";
+            wrapperName = "/System/Library/Java/Extensions/libpkcs11wrapper.jnilib";
         
         if(wrapperName.equals(""))
             throw new Exception("Impossible to detect which PKCS11Wrapper library to use for the OS '"+OS+"' and architecture '"+JVMArch+"'");
         
-        InputStream is = this.getClass().getResourceAsStream(wrapperName);
-        if(is==null)
+        if(!(new File(wrapperName)).exists()) 
             throw new Exception("The library " + wrapperName + " is not present in the jar");
         
-        wrapperPath = System.getProperty("java.io.tmpdir") + wrapperName;
-        OutputStream ou = new FileOutputStream(wrapperPath);
-        IOUtils.copyInputStreamToOutputStream(is, ou);
-        ou.close();
-        is.close();        
+        
+        wrapperPath = wrapperName;
+              
     }
 
     public long[] connectToLibrary(String library) throws Exception, Error{

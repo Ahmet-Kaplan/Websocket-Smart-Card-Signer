@@ -17,20 +17,19 @@
  */
 package df.sign;
 
+import df.sign.server.pdfSign;
 import java.util.List;
 
 import df.sign.datastructure.Data;
 import df.sign.pkcs11.SmartCardAccessManagerFactory;
 import df.sign.pkcs11.SmartCardAccessManagerFactory.PKCS11AccessMethod;
-import df.sign.server.WebSocketServer;
 
 public class SignFactory {
 
-    public static PKCS11AccessMethod pkcs11AccessMethod = SmartCardAccessManagerFactory.PKCS11AccessMethod.JNA;
+    public static PKCS11AccessMethod pkcs11AccessMethod = SmartCardAccessManagerFactory.PKCS11AccessMethod.IAIK;
 
     private static SignEngine signEngine = null;
     private static pdfSign pdfsign = null;
-    private static WebSocketServer webSocketServer = null;
 
     public static pdfSign getUniquePDFSign() throws Exception {
         if (pdfsign == null) {
@@ -44,23 +43,6 @@ public class SignFactory {
             signEngine = new SignEngine(SmartCardAccessManagerFactory.getSmartCardAccessManager(pkcs11AccessMethod), SignUtils.standardDllList);
         }
         return signEngine;
-    }
-
-    public static WebSocketServer getUniqueWebSocketServer() {
-        if (webSocketServer == null) {
-            webSocketServer = new WebSocketServer(WebSocketServer.defaultPort);
-        }
-        return webSocketServer;
-    }
-
-    public static WebSocketServer getNewWebSocketServer() {
-        if (webSocketServer != null) {
-            webSocketServer.terminate();
-            webSocketServer.waitTermination();
-            webSocketServer = null;
-        }
-        webSocketServer = new WebSocketServer(WebSocketServer.defaultPort);
-        return webSocketServer;
     }
 
     public static List<Data> performSign(String certId, String Pin, List<Data> dataToSignList) throws Exception {

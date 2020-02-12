@@ -17,6 +17,7 @@
  */
 package df.sign.server;
 
+import df.sign.SignEngine;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,41 +27,28 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue.ValueType;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
 
 import df.sign.SignFactory;
 import df.sign.SignUtils;
 import df.sign.datastructure.Data;
 import df.sign.datastructure.SignConfig;
+import spark.Request;
+import spark.Response;
 
-@ServerEndpoint(value = "/sign")
-public class WebSocketService {
-    private Session session = null;
-    
-    public void sendTestData() {
-        session.getAsyncRemote().sendText("{\"dataSigned\" : []}");
+public class SignServer {
+    public SignEngine signEngine = null;
+
+    public boolean readAllCertificates = false;
+    public String dnRestrictedSignatureName = "";
+
+    public SignServer(SignEngine signEngine) {
+        this.signEngine = signEngine;
     }
-    
-    @OnOpen
-    public void open(Session session) {
-        this.session = session;
-    }
-    
-    @OnClose
-    public void onClose(Session session) {}
-    
-    @OnError
-    public void onError(Throwable exception, Session session) {}
-    
-    @OnMessage
-    public String startSignProcess(String message, Session session) {
+
+
+    public String sign(Request request, Response response) {
         try{
-            JsonObject jsonObject = Json.createReader(new StringReader(message)).readObject();
+            JsonObject jsonObject = Json.createReader(new StringReader(request.body())).readObject();
             
             if(jsonObject.getValueType()!=ValueType.OBJECT)
                     throw new Exception("Expected Json Object");

@@ -103,7 +103,7 @@ var websocket_smartcard_signer = {
   },
   
   sign : function(resultsHandler, errorHandler){
-      var wsEndpoint = 'ws://127.0.0.1:38765/websockets/sign';
+      var wsEndpoint = 'ws://127.0.0.1:38765/sign';
       if(!(resultsHandler instanceof Function))
           throw 'The sign paramenter must be a function';
       var signService = new WebSocket(wsEndpoint);
@@ -139,7 +139,7 @@ var websocket_smartcard_signer = {
   },
   
   certificates : function(resultsHandler, errorHandler){
-      var wsEndpoint = 'ws://127.0.0.1:38765/websockets/certificates';
+      var wsEndpoint = 'ws://127.0.0.1:38766/certificates';
       if(!(resultsHandler instanceof Function))
           throw 'The certificates paramenter must be a function';
       var certService = new WebSocket(wsEndpoint);
@@ -168,7 +168,7 @@ var websocket_smartcard_signer = {
   },
   
     getHelp : function(resultsHandler, errorHandler){
-      var wsEndpoint = 'ws://127.0.0.1:38765/websockets/showHelp';
+      var wsEndpoint = 'ws://127.0.0.1:38767/showInfo';
       if(!(resultsHandler instanceof Function))
           throw 'The certificates paramenter must be a function';
       var helpService = new WebSocket(wsEndpoint);

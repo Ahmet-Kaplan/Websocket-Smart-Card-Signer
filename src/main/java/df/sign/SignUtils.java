@@ -43,97 +43,111 @@ import java.util.Locale;
 
 @SuppressWarnings("restriction")
 public class SignUtils {
-    
-    public static final String[] standardDllList = new String[]{"akisp11.dll","libakisp11.so","libakisp11.dylib","aetpkss1.dll","libaetpkss1.so","libaetpkss1.dylib","siecap11.dll","libsiecap11.so","libsiecap11.dylib", "incryptoki2.dll", "bit4ipki.dll", "bit4opki.dll", "bit4xpki.dll", "OCSCryptoki.dll", "asepkcs.dll", "SI_PKCS11.dll", "cmP11.dll", "cmP11_M4.dll", "IpmPki32.dll", "IPMpkiLC.dll", "IpmPkiLU.dll", "bit4cpki.dll", "bit4p11.dll", "asepkcs.dll", "PKCS11.dll", "eTPKCS11.dll", "SSC_PKCS11.dll", "inp11lib.dll", "opensc-pkcs11.dll", "libbit4opki.so", "libbit4spki.so", "libbit4p11.so", "libbit4ipki.so", "opensc-pkcs11.so", "libeTPkcs11.so", "libopensc.dylib", "libbit4xpki.dylib", "libbit4ipki.dylib", "libbit4opki.dylib", "libASEP11.dylib", "libeTPkcs11.dylib"};    
+
+    public static final String[] standardDllList = new String[]{"akisp11.dll", "libakisp11.so", "libakisp11.dylib", "aetpkss1.dll", "libaetpkss1.so", "libaetpkss1.dylib", "siecap11.dll", "libsiecap11.so", "libsiecap11.dylib", "incryptoki2.dll", "bit4ipki.dll", "bit4opki.dll", "bit4xpki.dll", "OCSCryptoki.dll", "asepkcs.dll", "SI_PKCS11.dll", "cmP11.dll", "cmP11_M4.dll", "IpmPki32.dll", "IPMpkiLC.dll", "IpmPkiLU.dll", "bit4cpki.dll", "bit4p11.dll", "asepkcs.dll", "PKCS11.dll", "eTPKCS11.dll", "SSC_PKCS11.dll", "inp11lib.dll", "opensc-pkcs11.dll", "libbit4opki.so", "libbit4spki.so", "libbit4p11.so", "libbit4ipki.so", "opensc-pkcs11.so", "libeTPkcs11.so", "libopensc.dylib", "libbit4xpki.dylib", "libbit4ipki.dylib", "libbit4opki.dylib", "libASEP11.dylib", "libeTPkcs11.dylib"};
     private static ArrayList<String[]> mapCardInfoList = new ArrayList<String[]>();
-    public static final String logFilePath = System.getProperty("java.io.tmpdir")+"websocket_smartcard_signer.log";
-    
+    public static final String logFilePath = System.getProperty("java.io.tmpdir") + "websocket_smartcard_signer.log";
+
     static {
         mapCardInfoList.add(new String[]{"TÜBİTAK Akis Kart", "akisp11.dll%libakisp11.so%libakisp11.dylib", "3B9F158131FE45806755454B41451221318073B3A1805A", "https://www.kamusm.gov.tr"});
-        mapCardInfoList.add(new String[]{"SAFESIGN Kart", "aetpkss1.dll%libaetpkss1.so%libaetpkss1.dylib", "3BBB1800C01031FE4580670412B00303000081053C", "https://www.etugra.com"});       
-        mapCardInfoList.add(new String[]{"TurkTrust TKART", "siecap11.dll%libsiecap11.so%libsiecap11.dylib", "3BF2180002C10A31FE58C80874", "https://www.turktrust.com"});       
+        mapCardInfoList.add(new String[]{"SAFESIGN Kart", "aetpkss1.dll%libaetpkss1.so%libaetpkss1.dylib", "3BBB1800C01031FE4580670412B00303000081053C", "https://www.etugra.com"});
+        mapCardInfoList.add(new String[]{"TurkTrust TKART", "siecap11.dll%libsiecap11.so%libsiecap11.dylib", "3BF2180002C10A31FE58C80874", "https://www.turktrust.com"});
         mapCardInfoList.add(new String[]{"Carta Raffaello 111", "bit4ipki.dll%incryptoki2.dll%libbit4ipki.so%libbit4ipki.dylib", "3BFF1800FF8131FE55006B02090200011101434E531131808E", "http://www.cartaraffaello.it/AreaDownload/tabid/80/language/it-IT/Default.aspx"});
         mapCardInfoList.add(new String[]{"Carta Raffaello 611", "bit4opki.dll%libbit4opki.so%libbit4opki.dylib", "3BFF1800008131FE45006B04050100012101434E5310318059", "http://www.cartaraffaello.it/AreaDownload/tabid/80/language/it-IT/Default.aspx"});
-   
+
     }
-    
+
     public static void initLog() throws Exception {
         File logFile = new File(logFilePath);
         logFile.delete();
         logFile.createNewFile();
-        
+
         System.setOut(new PrintStream(new TeeOutputStream(System.out, new FileOutputStream(logFile)), true));
         System.setErr(new PrintStream(new TeeOutputStream(System.err, new FileOutputStream(logFile)), true));
     }
-    
-    public static ArrayList<CertificateData> processCertificateList(ArrayList<CertificateData> certificateDataList){
+
+    public static ArrayList<CertificateData> processCertificateList(ArrayList<CertificateData> certificateDataList) {
         ArrayList<CertificateData> nonRepudList = new ArrayList<CertificateData>();
         ArrayList<CertificateData> signList = new ArrayList<CertificateData>();
-        
-        for(CertificateData certificateData:certificateDataList){
-            if(X509Utils.checkIsNonRepudiation(certificateData.cert))
+
+        for (CertificateData certificateData : certificateDataList) {
+            if (X509Utils.checkIsNonRepudiation(certificateData.cert)) {
                 nonRepudList.add(certificateData);
-            if(X509Utils.checkIsForSigning(certificateData.cert))
+            }
+            if (X509Utils.checkIsForSigning(certificateData.cert)) {
                 signList.add(certificateData);
+            }
         }
-        if(nonRepudList.size()!=0)
+        if (nonRepudList.size() != 0) {
             return nonRepudList;
-        
-        if(signList.size()!=0)
+        }
+
+        if (signList.size() != 0) {
             return signList;
-        
+        }
+
         return new ArrayList<CertificateData>();
     }
-    
-    public static byte[] calculateHASH(String digestOID, byte[] data) throws Exception{
+
+    public static byte[] calculateHASH(String digestOID, byte[] data) throws Exception {
         String digestName = "";
-        
-        try{
-            if(Security.getProvider("BC") == null)
+
+        try {
+            if (Security.getProvider("BC") == null) {
                 Security.addProvider(new BouncyCastleProvider());
-            
-            if(digestOID.equals(CMSSignedDataGenerator.DIGEST_MD5))
+            }
+
+            if (digestOID.equals(CMSSignedDataGenerator.DIGEST_MD5)) {
                 digestName = "MD5";
-            if(digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA1))
+            }
+            if (digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA1)) {
                 digestName = "SHA-1";
-            if(digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA256))
+            }
+            if (digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA256)) {
                 digestName = "SHA-256";
-            if(digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA384))
+            }
+            if (digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA384)) {
                 digestName = "SHA-384";
-            if(digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA512))
+            }
+            if (digestOID.equals(CMSSignedDataGenerator.DIGEST_SHA512)) {
                 digestName = "SHA-512";
-            
-            if(digestName.equals(""))
+            }
+
+            if (digestName.equals("")) {
                 throw new Exception("Unsupported digestOID");
-            
+            }
+
             MessageDigest md = MessageDigest.getInstance(digestName, "BC");
             md.update(data);
-            
+
             byte[] hash = md.digest();
 
             return hash;
-        }catch(Exception e){
-            throw new Exception("Error on the generation for the Hash "+digestName+":\n"+e.getMessage());
+        } catch (Exception e) {
+            throw new Exception("Error on the generation for the Hash " + digestName + ":\n" + e.getMessage());
         }
     }
-    
-    public static boolean isContainedIntoArray(long element, long[] elementList){
-        for(Object el:elementList)
-            if(el.equals(element))
+
+    public static boolean isContainedIntoArray(long element, long[] elementList) {
+        for (Object el : elementList) {
+            if (el.equals(element)) {
                 return true;
+            }
+        }
         return false;
     }
-    
-    public static String getLibraryFullPath(String pkcs11Library){
-        if(new File(pkcs11Library).exists())
+
+    public static String getLibraryFullPath(String pkcs11Library) {
+        if (new File(pkcs11Library).exists()) {
             return pkcs11Library;
-        
+        }
+
         String OS = System.getProperty("os.name").toLowerCase(new Locale("tr", "TR"));
-        
+
         String[] pathList = new String[0];
-        
-        if(OS.contains("windows")){
-            if(pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("dll")){
+
+        if (OS.contains("windows")) {
+            if (pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("dll")) {
                 String systemRoot = System.getenv("SystemRoot");
                 String programFiles = System.getenv("ProgramFiles");
                 pathList = new String[]{
@@ -144,7 +158,7 @@ public class SignUtils {
                 };
             }
         } else {
-            if(pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("so") || pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("dylib")){
+            if (pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("so") || pkcs11Library.toLowerCase(new Locale("tr", "TR")).endsWith("dylib")) {
                 pathList = new String[]{
                     "/usr/lib/" + pkcs11Library,
                     "/usr/lib/pkcs11/" + pkcs11Library,
@@ -158,103 +172,124 @@ public class SignUtils {
                 };
             }
         }
-        
-        for(String path:pathList)
-            if(new File(path).exists())
+
+        for (String path : pathList) {
+            if (new File(path).exists()) {
                 return path;
-        
+            }
+        }
+
         return null;
     }
 
-    public static String[] checkJarConflicts(){
+    public static String[] checkJarConflicts() {
         String ret = "";
-        String[] dirs = System.getProperty("java.ext.dirs").split(";");
-        for(String dir:dirs){
-            File[] files = new File(dir).listFiles();
-            if(files == null)
-                continue;
-            for(File file:files){
-                if(file.isDirectory())
+        String dirStr = System.getProperty("java.ext.dirs");
+        if (dirStr != null) {
+            String[] dirs = dirStr.split(";");
+            for (String dir : dirs) {
+                File[] files = new File(dir).listFiles();
+                if (files == null) {
                     continue;
-                String fileName = file.getName().toLowerCase();
-                if(fileName.endsWith(".jar") && (fileName.contains("bcprov") || fileName.contains("bcpkix") || fileName.contains("itextpdf")  || fileName.contains("jna") || fileName.contains("iaik")))
-                    ret += file.getAbsolutePath() + ";";
+                }
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        continue;
+                    }
+                    String fileName = file.getName().toLowerCase();
+                    if (fileName.endsWith(".jar") && (fileName.contains("bcprov") || fileName.contains("bcpkix") || fileName.contains("itextpdf") || fileName.contains("jna") || fileName.contains("iaik"))) {
+                        ret += file.getAbsolutePath() + ";";
+                    }
+                }
             }
         }
-        if(ret == "")
+        if (ret == "") {
             return new String[0];
+        }
         return ret.split(";");
     }
-    
-    public static ArrayList<String> getConnectedCardATR(){
+
+    public static ArrayList<String> getConnectedCardATR() {
         ArrayList<String> ret = new ArrayList<String>();
-        try{
+        try {
             List<CardTerminal> terminalList = TerminalFactory.getDefault().terminals().list();
-            
-            for(CardTerminal terminal:terminalList)
-                if(terminal.isCardPresent()){
+
+            for (CardTerminal terminal : terminalList) {
+                if (terminal.isCardPresent()) {
                     javax.smartcardio.Card card = terminal.connect("*");
                     ret.add(StringUtils.toHexString(card.getATR().getBytes()));
                     card.disconnect(false);
                 }
-        }catch(Exception ex){}
+            }
+        } catch (Exception ex) {
+        }
         return ret;
     }
-    
-    public static String[] getCardInfo(String atr){
-        for(String[] mapCardInfo:mapCardInfoList)
-            if(atr.equals(mapCardInfo[2]))
+
+    public static String[] getCardInfo(String atr) {
+        for (String[] mapCardInfo : mapCardInfoList) {
+            if (atr.equals(mapCardInfo[2])) {
                 return mapCardInfo;
+            }
+        }
         return null;
     }
-    
-    public static String getCardTypeFromDLL(String dll){
-        for(String[] mapCardInfo:mapCardInfoList)
-            if(mapCardInfo[1].contains(dll))
+
+    public static String getCardTypeFromDLL(String dll) {
+        for (String[] mapCardInfo : mapCardInfoList) {
+            if (mapCardInfo[1].contains(dll)) {
                 return mapCardInfo[0];
+            }
+        }
         return "";
     }
-    
-    public static String getIDFromSubject(String certificateSubject){
+
+    public static String getIDFromSubject(String certificateSubject) {
         String ret = "";
-        String CN = certificateSubject.substring(certificateSubject.indexOf("CN=")+3);
+        String CN = certificateSubject.substring(certificateSubject.indexOf("CN=") + 3);
         int indexCN = CN.indexOf(',');
-        if(indexCN == -1)
+        if (indexCN == -1) {
             indexCN = CN.length();
+        }
         CN = CN.substring(0, indexCN);
-        if(CN.contains("/"))
+        if (CN.contains("/")) {
             CN = CN.split("/")[0].substring(1);
-        
+        }
+
         String O = "Not Defined";
-        if(certificateSubject.contains("O=")){
-            O = certificateSubject.substring(certificateSubject.indexOf("O=")+2);
+        if (certificateSubject.contains("O=")) {
+            O = certificateSubject.substring(certificateSubject.indexOf("O=") + 2);
             int indexO = O.indexOf(',');
-            if(indexO == -1)
+            if (indexO == -1) {
                 indexO = O.length();
+            }
             O = O.substring(0, indexO);
-            if(O.contains("/"))
+            if (O.contains("/")) {
                 O = O.split("/")[0];
+            }
         }
         ret = CN + "    Org:" + O;
         return ret;
     }
-    
-    public static CertificateData getCertificateDataByID(String id, ArrayList<CertificateData> certList){
-        for(CertificateData cert:certList)
-            if(cert.id.equals(id))
+
+    public static CertificateData getCertificateDataByID(String id, ArrayList<CertificateData> certList) {
+        for (CertificateData cert : certList) {
+            if (cert.id.equals(id)) {
                 return cert;
+            }
+        }
         return null;
     }
-    
-    public static byte[] base64Encode(byte[] data){
+
+    public static byte[] base64Encode(byte[] data) {
         return org.bouncycastle.util.encoders.Base64.encode(data);
     }
-    
-    public static byte[] base64Decode(byte[] data){
+
+    public static byte[] base64Decode(byte[] data) {
         return org.bouncycastle.util.encoders.Base64.decode(data);
     }
-    
-    public static Date getNTPDate() throws Exception{
+
+    public static Date getNTPDate() throws Exception {
         //FIXME: how to use system defined proxy here ?
         System.setProperty("java.net.useSystemProxies", "true");
         NTPUDPClient client = new NTPUDPClient();

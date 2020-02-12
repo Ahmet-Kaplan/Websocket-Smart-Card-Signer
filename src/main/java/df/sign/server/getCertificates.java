@@ -15,43 +15,22 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>. 
  */
-package df.sign;
+package df.sign.server;
 
+import df.sign.SignEngine;
+import df.sign.SignUtils;
 import java.util.ArrayList;
 import df.sign.pkcs11.CertificateData;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.Session;
-import javax.websocket.server.ServerEndpoint;
+import spark.Request;
+import spark.Response;
 
-@ServerEndpoint(value = "/certificates")
 public class getCertificates {
 
-    private Session session = null;
-
-    public void sendTestData() {
-        session.getAsyncRemote().sendText("{\"certificates\" : []}");
-    }
-
-    @OnOpen
-    public void open(Session session) {
-        this.session = session;
-    }
-
-    @OnClose
-    public void onClose(Session session) {
-    }
-
-    @OnError
-    public void onError(Throwable exception, Session session) {
-    }
-
+    
     public SignEngine signEngine = null;
 
     public boolean readAllCertificates = false;
@@ -59,9 +38,8 @@ public class getCertificates {
     public getCertificates(SignEngine signEngine) {
         this.signEngine = signEngine;
     }
-
-    @OnMessage
-    public String getCertificates(String message, Session session) {
+    
+    public String getCertificates(Request request, Response response) {
         try {
 
             ArrayList<CertificateData> certList = new ArrayList<CertificateData>();
@@ -87,13 +65,12 @@ public class getCertificates {
             }
 
             JsonObject ret = Json.createObjectBuilder().add("certificates", jsonArrayBuilder).build();
-            String retS = ret.toString();
-
-            return retS;
+            return ret.toString();
 
         } catch (Exception ex) {
             ex.printStackTrace();
             return "{\"error\" : \"" + ex.getMessage().replace("\"", "\\\"").replace("\\", "\\\\") + "\"}";
+            
         } finally {
             //SignFactory.getUniqueWebSocketServer().terminate();
         }
