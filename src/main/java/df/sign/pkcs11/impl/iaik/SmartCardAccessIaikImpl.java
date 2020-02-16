@@ -17,6 +17,7 @@
  */
 package df.sign.pkcs11.impl.iaik;
 
+import df.sign.SignUtils;
 import iaik.pkcs.pkcs11.Mechanism;
 import iaik.pkcs.pkcs11.Module;
 import iaik.pkcs.pkcs11.Session;
@@ -30,7 +31,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import df.sign.SignUtils;
 import df.sign.pkcs11.CertificateData;
 import df.sign.pkcs11.SmartCardAccessI;
 import df.sign.utils.X509Utils;
@@ -53,15 +53,15 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         
         if(OS.startsWith("windows")){
             if(JVMArch.equals("x86"))
-                wrapperName = "C:\\WINDOWS\\system32\\PKCS11Wrapper32.dll";
+                wrapperName = "C:\\WINDOWS\\system32\\PKCS11Wrapper.dll";
             else
-                wrapperName = "C:\\WINDOWS\\system32\\PKCS11Wrapper64.dll";
+                wrapperName = "C:\\WINDOWS\\system32\\PKCS11Wrapper.dll";
         }
         if(OS.startsWith("linux")){
             if(JVMArch.contains("64"))
-                wrapperName = "	/usr/lib/libpkcs11wrapper64.so";
+                wrapperName = "	/usr/lib/libpkcs11wrapper.so";
             else
-                wrapperName = "	/usr/lib/libpkcs11wrapper32.so";
+                wrapperName = "	/usr/lib/libpkcs11wrapper.so";
         }
         if(OS.startsWith("mac"))
             wrapperName = "/System/Library/Java/Extensions/libpkcs11wrapper.jnilib";
@@ -81,7 +81,7 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         System.out.println("Connection to " + library);
         
         prepareWrapper();
-        pkcs11Module = Module.getInstance(wrapperPath);
+        pkcs11Module = Module.getInstance(library);//wrapperPath);
         pkcs11Module.initialize(null);
         
         Slot[] slotList = pkcs11Module.getSlotList(Module.SlotRequirement.TOKEN_PRESENT);
@@ -93,7 +93,7 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
         long CKM_RSA_PKCS = new Long(0x00000001);
         
         for(Slot slot:slotList){
-            try{        
+            try{     
                 Mechanism[] mechanismList = slot.getToken().getMechanismList();
                 long[] mechLst = new long[mechanismList.length];
                 for(int i=0;i<mechanismList.length;i++)
@@ -101,7 +101,7 @@ public class SmartCardAccessIaikImpl implements SmartCardAccessI{
                 
                 if(SignUtils.isContainedIntoArray(CKM_RSA_PKCS, mechLst))
                     if(slot.getToken().getMechanismInfo(new Mechanism(CKM_RSA_PKCS)).isSign())
-                        retArrLst.add(slot.getSlotID());
+                retArrLst.add(slot.getSlotID());
             }catch(Exception e){}catch(Error e){}
         }
         

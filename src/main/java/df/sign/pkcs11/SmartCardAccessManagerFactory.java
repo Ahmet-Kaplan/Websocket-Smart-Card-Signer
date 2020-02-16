@@ -23,10 +23,12 @@ import df.sign.pkcs11.impl.jna.SmartCardAccessJnaImpl;
 public class SmartCardAccessManagerFactory {
     public static enum PKCS11AccessMethod {
         JNA,
-        IAIK
+        IAIK,
+        TUBITAK
     };
     private static SmartCardAccessI smartCardAccessManager_jna = null;
     private static SmartCardAccessI smartCardAccessManager_iaik = null;
+    private static SmartCardAccessI smartCardAccessManager_tubitak = null;
 
     public static SmartCardAccessI getSmartCardAccessManager(PKCS11AccessMethod method) throws Exception {
         if (method == PKCS11AccessMethod.JNA) {
@@ -41,6 +43,12 @@ public class SmartCardAccessManagerFactory {
             return smartCardAccessManager_iaik;
         }
         
+         if (method == PKCS11AccessMethod.TUBITAK) {
+            if (smartCardAccessManager_tubitak == null)
+                smartCardAccessManager_tubitak = new SmartCardAccessIaikImpl();
+            return smartCardAccessManager_tubitak;
+        }
+         
         throw new Exception("The provided PKCS11 Access Method is not available");
     }
 }
