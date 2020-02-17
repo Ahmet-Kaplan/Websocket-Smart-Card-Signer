@@ -19,6 +19,7 @@ package df.sign.pkcs11;
 
 import df.sign.pkcs11.impl.iaik.SmartCardAccessIaikImpl;
 import df.sign.pkcs11.impl.jna.SmartCardAccessJnaImpl;
+import df.sign.pkcs11.impl.tubitak.SmartCardAccessTubitakImpl;
 
 public class SmartCardAccessManagerFactory {
     public static enum PKCS11AccessMethod {
@@ -45,7 +46,7 @@ public class SmartCardAccessManagerFactory {
         
          if (method == PKCS11AccessMethod.TUBITAK) {
             if (smartCardAccessManager_tubitak == null)
-                smartCardAccessManager_tubitak = new SmartCardAccessIaikImpl();
+                smartCardAccessManager_tubitak = new SmartCardAccessTubitakImpl();
             return smartCardAccessManager_tubitak;
         }
          
