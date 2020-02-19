@@ -54,18 +54,20 @@ public class showInfo {
             }
             infoList.add("Conflicts", conflicts);
 
-            JsonObjectBuilder libraries ;
+            JsonObjectBuilder library;
+            JsonObjectBuilder libraries = Json.createObjectBuilder();
 
             for (int i = 0; i < dllList.length; i++) {
                 if (SignUtils.getLibraryFullPath(dllList[i]) != null) {
-                    libraries = Json.createObjectBuilder();
-                    libraries.add("File name", dllList[i]);
-                    libraries.add("Card Type",
+                    library = Json.createObjectBuilder();
+                    library.add("File name", dllList[i]);
+                    library.add("Card Type",
                             ((SignUtils.getCardTypeFromDLL(dllList[i]) != "") ? SignUtils.getCardTypeFromDLL(dllList[i]) : "NOT MANAGED"));
-                    infoList.add("Libraries", libraries);
+                    libraries.add("Library", library);
                 }
             }
-           
+            infoList.add("Libraries", libraries);
+
             String smartcardInfo;
 
             ArrayList<String> cardATRList = SignUtils.getConnectedCardATR();

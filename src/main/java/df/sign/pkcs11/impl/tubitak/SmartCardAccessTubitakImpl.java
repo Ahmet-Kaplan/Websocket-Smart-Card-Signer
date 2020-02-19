@@ -10,7 +10,6 @@ package df.sign.pkcs11.impl.tubitak;
  * @author akaplan
  */
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,8 +19,6 @@ import java.security.PrivateKey;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.smartcardio.CardTerminal;
 import javax.smartcardio.TerminalFactory;
 import sun.security.pkcs11.wrapper.PKCS11Exception;
@@ -64,41 +61,105 @@ import tr.gov.tubitak.uekae.esya.api.smartcard.pkcs11.SmartOp;
 import java.util.ArrayList;
 
 import df.sign.pkcs11.CertificateData;
-import df.sign.pkcs11.SmartCardAccessI;
+import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import javax.smartcardio.CardException;
+import tr.gov.tubitak.uekae.esya.api.common.util.StringUtil;
 
-public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
+public class SmartCardAccessTubitakImpl  {
 
+    //private static Logger LOGGER = LoggerFactory.getLogger(SmartCardAccessI.class);
+
+    //private final Object lockObject = new Object();
     private BaseSmartCard smartCard = null;
     private String[] Terminals = null;
+    private long currentSlot = 0L;
+    private String currentTerminal = null;
 
-    public String configFile;
-    public String dataTextFile;
-    public String dataFileContentType;
-    public String policyFile;
-    public String licenseFile;
+    //private  SmartCardAccessTubitakImpl mSCManager = null;
+    private String mSCManager = null;
+    private  boolean useAPDU = true;
+    private int mSlotCount = 0;
+    private String mSerialNumber;
+    
+    private String configFile = "esya-signature-config.xml";
+    private String dataTextFile = "data.txt";
+    private String dataFileContentType = "text/plain";
+    private String policyFile  = "certval-policy-test.xml";
+    private String licenseFile  = "lisans.xml";
 
-    public SmartCardAccessTubitakImpl() {
-        this.policyFile = "certval-policy-test.xml";
-        this.dataFileContentType = "text/plain";
-        this.dataTextFile = "data.txt";
-        this.configFile = "esya-signature-config.xml";
-        this.licenseFile = "lisans.xml";
-        try {
-            setLicenseXml();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void getInstance() throws Exception, Error {
 
+       // synchronized (lockObject) {
+           
+            if (mSCManager == null) {
+
+                setLicenseXml();
+
+               // mSCManager = new SmartCardAccessTubitakImpl();
+                Terminals = SmartOp.getCardTerminals();
+                mSlotCount = Terminals.length;
+
+               // return mSCManager;
+            } else {
+                //Check is there any change
+                try {
+                    //If there is a new card in the system, user will select a smartcard.
+                    //Create new SmartCard.
+                    if (getSlotCount() < SmartOp.getCardTerminals().length) {
+                      //  LOGGER.debug("New card inserted into system");
+                        mSCManager = null;
+                        
+                       getInstance();
+                    }
+
+                    //If used card is removed, select new card.
+                    // mSerialNumber = StringUtil.toString(smartCard.getSerial());
+                    String availableSerial = null;
+                    try {
+                        availableSerial = StringUtil.toString(smartCard.getSerial());
+                    } catch (SmartCardException ex) {
+                       // LOGGER.debug("Card removed");
+                        mSCManager = null;
+                       getInstance();
+                    }
+                    if (!getSelectedSerialNumber().equals(availableSerial)) {
+                       // LOGGER.debug("Serial number changed. New card is placed to system");
+
+                        mSCManager = null;
+                       getInstance();
+                    }
+
+                    //return mSCManager;
+                } catch (SmartCardException e) {
+                    mSCManager = null;
+                    throw e;
+                }
+            }
+        //}
+    }
+
+    private void reset() throws SmartCardException {
+       // synchronized (lockObject) {
+            mSCManager = null;
+       // }
+    }
+
+    private String getSelectedSerialNumber() {
+        return mSerialNumber;
+    }
+
+    private int getSlotCount() {
+        return mSlotCount;
     }
 
     private ValidationPolicy getPolicy() throws ESYAException {
         try {
             return PolicyReader.readValidationPolicy(new FileInputStream(policyFile));
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, ex);
+         //   LOGGER.error(ex.getLocalizedMessage());
             return null;
         }
     }
@@ -110,8 +171,8 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
         return c;
     }
 
-    private PAdESContext createPadesContext(String fileName) {
-        PAdESContext c = new PAdESContext(new File(fileName).toURI());
+    private PAdESContext createPadesContext() {
+        PAdESContext c = new PAdESContext();
         c.setConfig(new Config(configFile));
         return c;
     }
@@ -126,21 +187,20 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
         return new SignableBytes(tobeSignBytes, dataTextFile, dataFileContentType);
     }
 
-    public ArrayList<CertificateData> getCertificateList(long slotID) throws SmartCardException, ESYAException, PKCS11Exception, IOException {
+    public ArrayList<CertificateData> getCertificateList(long slotID)  throws Exception, Error {
         ArrayList<CertificateData> result = new ArrayList<CertificateData>();
-
-        Terminals = SmartOp.getCardTerminals();
 
         for (String terminal : Terminals) {
             if (terminal != null && !terminal.isEmpty()) {
                 if (smartCard == null) {
-                    smartCard = getSmartCard(terminal);
+                    getSmartCard(terminal);
                 }
                 if (smartCard != null) {
                     if (APDUSmartCard.isSupported(terminal)) {
 
                         CardTerminal ct = TerminalFactory.getDefault().terminals().getTerminal(terminal);
                         ((APDUSmartCard) smartCard).openSession(ct);
+                        currentSlot = ((APDUSmartCard) smartCard).getSlotList()[0];
 
                     } else {
                         Pair<Long, CardType> slotAndCardType = SmartOp.getSlotAndCardType(terminal);
@@ -153,11 +213,11 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
                                 ECertificate cert = new ECertificate(bs);
                                 CertificateData certData = new CertificateData();
 
-                                certData.cert = cert.asX509Certificate();
-                                certData.certID = cert.getEncoded();
-                                certData.certLABEL = cert.getEmail().getBytes();
-                                certData.id = cert.getEmail();
-                                certData.slot = slotID;
+                                certData.cert = cert;
+                                certData.certID = cert.getEmail().getBytes();
+                                certData.certLABEL =  cert.asX509Certificate().getSubjectDN().toString().getBytes();
+                                certData.id = cert.asX509Certificate().getSerialNumber().toString();
+                                certData.slot = currentSlot;
 
                                 result.add(certData);
                             }
@@ -170,11 +230,11 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
         return result;
     }
 
-    private byte[] signWithSmartCard(String terminal, ECertificate signatureCertificate, String pinCode, byte[] tobeSignBytes) throws SmartCardException, LoginException, SignatureException, PKCS11Exception, IOException, ESYAException {
+    private byte[] signWithSmartCard(String terminal, ECertificate signatureCertificate, String pinCode, byte[] tobeSignBytes) throws CardException, SmartCardException, LoginException, SignatureException, PKCS11Exception, IOException, ESYAException {
         byte[] result = null;
         if (terminal != null && !terminal.isEmpty() && signatureCertificate != null && pinCode != null && !pinCode.isEmpty() && tobeSignBytes != null) {
             if (smartCard == null) {
-                smartCard = getSmartCard(terminal);
+                getSmartCard(terminal);
             }
             if (smartCard != null) {
                 if (APDUSmartCard.isSupported(terminal)) {
@@ -279,55 +339,55 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
 
     }
 
-    private BaseSmartCard getSmartCard(String terminal) throws PKCS11Exception, IOException, ESYAException {
+    private void getSmartCard(String terminal) throws PKCS11Exception, IOException, ESYAException {
         boolean APDUSupport;
         try {
             APDUSupport = APDUSmartCard.isSupported(terminal);
         } catch (NoClassDefFoundError ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, null, "AkisCIF.jar is missing");
+         //   LOGGER.error("AkisCIF.jar is missing");
             APDUSupport = false;
         }
         P11SmartCard p11SmartCard;
         if (APDUSupport) {
             APDUSmartCard asc = new APDUSmartCard();
-            return asc;
+            smartCard= asc;
 
         } else {
             Pair<Long, CardType> slotAndCardType;
             slotAndCardType = SmartOp.getSlotAndCardType(terminal);
             if ((terminal.contains("ACS")) && (((CardType) slotAndCardType.getObject2()).toString().compareTo(CardType.UNKNOWN.toString()) == 0)) {
                 if (terminal.contains("ACR38U")) {
-                    long slotNum = SmartOp.findSlotNumber(CardType.TKART);
-                    slotAndCardType.setObject1(slotNum);
+                    currentSlot = SmartOp.findSlotNumber(CardType.TKART);
+                    slotAndCardType.setObject1(currentSlot);
                     slotAndCardType.setObject2(CardType.TKART);
                 } else {
-                    long slotNum = SmartOp.findSlotNumber(CardType.SAFESIGN);
-                    slotAndCardType.setObject1(slotNum);
+                    currentSlot = SmartOp.findSlotNumber(CardType.SAFESIGN);
+                    slotAndCardType.setObject1(currentSlot);
                     slotAndCardType.setObject2(CardType.SAFESIGN);
                 }
             } else if ((terminal.contains("OMNIKEY CardMan 3x21")) && (((CardType) slotAndCardType.getObject2()).toString().compareTo(CardType.UNKNOWN.toString()) == 0)) {
-                long slotNum = SmartOp.findSlotNumber(CardType.TKART);
-                slotAndCardType.setObject1(slotNum);
+                currentSlot = SmartOp.findSlotNumber(CardType.TKART);
+                slotAndCardType.setObject1(currentSlot);
                 slotAndCardType.setObject2(CardType.TKART);
             } else if ((terminal.contains("OMNIKEY")) && (((CardType) slotAndCardType.getObject2()).toString().compareTo(CardType.UNKNOWN.toString()) == 0)) {
-                long slotNum = SmartOp.findSlotNumber(CardType.TKART);
-                slotAndCardType.setObject1(slotNum);
+                currentSlot = SmartOp.findSlotNumber(CardType.TKART);
+                slotAndCardType.setObject1(currentSlot);
                 slotAndCardType.setObject2(CardType.TKART);
             } else if ((terminal.contains("Gemplus")) && (((CardType) slotAndCardType.getObject2()).toString().compareTo(CardType.UNKNOWN.toString()) == 0)) {
-                long slotNum = SmartOp.findSlotNumber(CardType.TKART);
-                slotAndCardType.setObject1(slotNum);
+                currentSlot = SmartOp.findSlotNumber(CardType.TKART);
+                slotAndCardType.setObject1(currentSlot);
                 slotAndCardType.setObject2(CardType.TKART);
             }
             p11SmartCard = new P11SmartCard((CardType) slotAndCardType.getObject2());
-            return p11SmartCard;
+            smartCard = p11SmartCard;
         }
     }
 
     private Boolean setLicenseXml() throws Exception, ESYAException, FileNotFoundException {
 
-        InputStream licenseStream = this.getClass().getResourceAsStream(licenseFile);
+        //InputStream licenseStream = this.getClass().getResourceAsStream("./"+licenseFile);
 
-        boolean ret = LicenseUtil.setLicenseXml(licenseStream);
+        boolean ret = LicenseUtil.setLicenseXml(new FileInputStream("./"+licenseFile));
         Date expirationDate = LicenseUtil.getExpirationDate();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         System.out.println("License Expiration Date :" + dateFormat.format(expirationDate));
@@ -340,25 +400,14 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
         return LicenseUtil.setLicenseXml(licenseStream, password);
     }
 
-    private byte[] signPdfWithSmartCard(String terminal, ECertificate signatureCertificate, String pinCode, String pdfFile) throws SmartCardException, LoginException, SignatureException, FileNotFoundException, PKCS11Exception, IOException, ESYAException {
+    private byte[] signPdfWithSmartCard(ECertificate signatureCertificate,  InputStream pdfStream) throws CardException, SmartCardException, LoginException, SignatureException, FileNotFoundException, PKCS11Exception, IOException, ESYAException {
         byte[] result = null;
-        if (terminal != null && !terminal.isEmpty() && signatureCertificate != null && pinCode != null && !pinCode.isEmpty() && pdfFile != null) {
-            smartCard = getSmartCard(terminal);
-
-            if (smartCard != null) {
-                if (APDUSmartCard.isSupported(terminal)) {
-                    CardTerminal ct = TerminalFactory.getDefault().terminals().getTerminal(terminal);
-                    ((APDUSmartCard) smartCard).openSession(ct);
-                } else {
-                    Pair<Long, CardType> slotAndCardType = SmartOp.getSlotAndCardType(terminal);
-                    smartCard.openSession((slotAndCardType.getObject1()));
-                }
-
-                if (smartCard.isSessionActive()) {
+        if (signatureCertificate != null && pdfStream!= null) {
+            
+            if (smartCard.isSessionActive()) {
 
                     BaseSigner signer = smartCard.getSigner(signatureCertificate.asX509Certificate(), Algorithms.SIGNATURE_RSA_SHA256);
-                    smartCard.login(pinCode);
-                    SignatureContainer container = SignatureFactory.readContainer(SignatureFormat.PAdES, new FileInputStream(pdfFile), createPadesContext(pdfFile));
+                    SignatureContainer container = SignatureFactory.readContainer(SignatureFormat.PAdES, pdfStream, createPadesContext());
                     Signature signature = container.createSignature(signatureCertificate);
                     signature.setSigningTime(Calendar.getInstance());
                     signature.sign(signer);
@@ -367,47 +416,25 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
                     container.write(out);
                     result = out.toByteArray();
 
-                    smartCard.logout();
-                    smartCard.closeSession();
-
                 }
             }
-        }
+        
         return result;
     }
 
-    private byte[] signPdfWithPfxFile(String pfxFile, String pinCode, String pdfFile) throws CryptoException, SignatureException, FileNotFoundException {
-        byte[] result;
-
-        ECertificate certificate = getPfxCertificate(new FileInputStream(pfxFile), pinCode);
-        PfxSigner signer = new PfxSigner(SignatureAlg.RSA_SHA256, new FileInputStream(pfxFile), pinCode.toCharArray());
-        SignatureContainer container = SignatureFactory.readContainer(SignatureFormat.PAdES, new FileInputStream(pdfFile), createPadesContext(pdfFile));
-        Signature signature = container.createSignature(certificate);
-        signature.setSigningTime(Calendar.getInstance());
-        signature.sign(signer);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        container.write(out);
-        result = out.toByteArray();
-
-        return result;
-
-    }
-
-    private ContainerValidationResult validateSignedPdf(String signedFile) throws FileNotFoundException, SignatureException {
-        SignatureContainer sc = SignatureFactory.readContainer(new FileInputStream(signedFile), createPadesContext(signedFile));
+    private ContainerValidationResult validateSignedPdf(InputStream signedFile) throws FileNotFoundException, SignatureException {
+        SignatureContainer sc = SignatureFactory.readContainer(signedFile, createPadesContext());
         return sc.verifyAll();
     }
 
-    private byte[] convertSignedPdfToTimeStampedPdf(String pdfFile) throws CryptoException, SignatureException, FileNotFoundException, IOException, ESYAException {
-        FileInputStream fileInputStream = new FileInputStream(pdfFile);
+    private byte[] convertSignedPdfToTimeStampedPdf(InputStream pdfFile) throws CryptoException, SignatureException, FileNotFoundException, IOException, ESYAException {
         PAdESContext context = new PAdESContext();
         context.setConfig(new Config(configFile));
         context.setSignWithTimestamp(true);
 
         SignatureContainer pc = SignatureFactory.readContainer(
                 SignatureFormat.PAdES,
-                fileInputStream, context);
+                pdfFile, context);
 
         int count = pc.getSignatures().size();
 
@@ -421,66 +448,100 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
         return baos.toByteArray();
     }
 
-    @Override
+    
     public long[] connectToLibrary(String library) throws Exception, Error {
         System.out.println("Connection to " + library);
+        // BaseSmartCard smartCard = null;
+        ArrayList<Long> retArrLst = new ArrayList<Long>();
+        setLicenseXml();
+        Terminals = SmartOp.getCardTerminals();
+        for (String terminal : Terminals) {
+            try {
+                if (smartCard == null) {
+                    getSmartCard(terminal);
+                }
+                if (smartCard != null) {
+                    if (APDUSmartCard.isSupported(terminal)) {
+                        CardTerminal ct = TerminalFactory.getDefault().terminals().getTerminal(terminal);
+                        retArrLst.add(((APDUSmartCard) smartCard).getSlotList()[0]);
+                    } else {
+                        Pair<Long, CardType> slotAndCardType = SmartOp.getSlotAndCardType(terminal);
+                        retArrLst.add((slotAndCardType.getObject1()));
+                    }
+                }
+            } catch (Exception | Error e) {
+            }
 
-        long[] ret = new long[0];
+        }
+
+        if (retArrLst.size()
+                == 0) {
+            throw new Exception("No smartcards found supporting signing with mechanism RSA_PKCS using library " + library);
+        }
+
+        long[] ret = new long[retArrLst.size()];
+        for (int i = 0; i < retArrLst.size(); i++) {
+            ret[i] = retArrLst.get(i);
+        }
 
         return ret;
+
     }
 
-    @Override
+
+   
     public long getPinMinLength(long slotID) throws Exception, Error {
-        return 4;// getSlot(slotID).getToken().getTokenInfo().getMinPinLen();
+        return 4L;// getSlot(slotID).getToken().getTokenInfo().getMinPinLen();
     }
 
-    @Override
+   
     public long getPinMaxLength(long slotID) throws Exception, Error {
-        return 16; //getSlot(slotID).getToken().getTokenInfo().getMaxPinLen();
+        return 16L; //getSlot(slotID).getToken().getTokenInfo().getMaxPinLen();
     }
 
-    @Override
+    
     public long login(long slotID, String pin) throws Exception, Error {
 
-        byte[] result = null;
+        if (currentSlot != slotID) {
 
-        String terminal = Terminals[(int) slotID];
+            for (String terminal : Terminals) {
 
-        if (terminal != null && !terminal.isEmpty() && pin != null && !pin.isEmpty()) {
-            if (smartCard == null) {
-                smartCard = getSmartCard(terminal);
-            }
-            if (smartCard != null) {
-                if (APDUSmartCard.isSupported(terminal)) {
-                    CardTerminal ct = TerminalFactory.getDefault().terminals().getTerminal(terminal);
-                    ((APDUSmartCard) smartCard).openSession(ct);
-                } else {
-                    Pair<Long, CardType> slotAndCardType = SmartOp.getSlotAndCardType(terminal);
-                    smartCard.openSession((slotAndCardType.getObject1()));
-                }
-
-                if (smartCard.isSessionActive()) {
-                    smartCard.login(pin);
+                if (terminal != null && !terminal.isEmpty() && pin != null && !pin.isEmpty()) {
+                    if (smartCard == null) {
+                        getSmartCard(terminal);
+                    }
+                    if (smartCard != null) {
+                        if (APDUSmartCard.isSupported(terminal)) {
+                            CardTerminal ct = TerminalFactory.getDefault().terminals().getTerminal(terminal);
+                            ((APDUSmartCard) smartCard).openSession(ct);
+                        } else {
+                            Pair<Long, CardType> slotAndCardType = SmartOp.getSlotAndCardType(terminal);
+                            smartCard.openSession((slotAndCardType.getObject1()));
+                        }
+                    }
                 }
             }
         }
 
-        return 0L;
+        if (smartCard.isSessionActive()) {
+            smartCard.login(pin);
+        }
+
+        return currentSlot;
     }
 
-    @Override
-    public byte[] signData(long sessionID, byte[] certId, byte[] certLabel, byte[] data) throws Exception, Error {
+ 
+    public byte[] signData(CertificateData cert,  byte[] data) throws Exception, Error {
         if (smartCard == null) {
             throw new Exception("session not initialized");
         }
 
-        byte[] signature = null;// smartCard.getSigner(data);
+        byte[] signature = signPdfWithSmartCard(cert.cert,new ByteArrayInputStream(data));
         return signature;
     }
 
-    @Override
-    public void closeSession(long sessionID) {
+ 
+    public void closeSession() {
         try {
             if (smartCard != null) {
                 smartCard.logout();
@@ -498,7 +559,7 @@ public class SmartCardAccessTubitakImpl implements SmartCardAccessI {
         smartCard = null;
     }
 
-    @Override
+ 
     public void disconnectLibrary() {
         try {
 

@@ -17,39 +17,38 @@
  */
 package df.sign.pkcs11;
 
-import df.sign.pkcs11.impl.iaik.SmartCardAccessIaikImpl;
-import df.sign.pkcs11.impl.jna.SmartCardAccessJnaImpl;
 import df.sign.pkcs11.impl.tubitak.SmartCardAccessTubitakImpl;
 
 public class SmartCardAccessManagerFactory {
+
     public static enum PKCS11AccessMethod {
         JNA,
-        IAIK,
-        TUBITAK
+        TUBITAK,
+        TEMP
     };
-    private static SmartCardAccessI smartCardAccessManager_jna = null;
-    private static SmartCardAccessI smartCardAccessManager_iaik = null;
-    private static SmartCardAccessI smartCardAccessManager_tubitak = null;
+    private static SmartCardAccessTubitakImpl smartCardAccessManager_tubitak = null;
 
-    public static SmartCardAccessI getSmartCardAccessManager(PKCS11AccessMethod method) throws Exception {
-        if (method == PKCS11AccessMethod.JNA) {
-            if (smartCardAccessManager_jna == null)
-                smartCardAccessManager_jna = new SmartCardAccessJnaImpl();
-            return smartCardAccessManager_jna;
-        }
-        
-        if (method == PKCS11AccessMethod.IAIK) {
-            if (smartCardAccessManager_iaik == null)
-                smartCardAccessManager_iaik = new SmartCardAccessIaikImpl();
-            return smartCardAccessManager_iaik;
-        }
-        
-         if (method == PKCS11AccessMethod.TUBITAK) {
-            if (smartCardAccessManager_tubitak == null)
-                smartCardAccessManager_tubitak = new SmartCardAccessTubitakImpl();
+    public static SmartCardAccessTubitakImpl getSmartCardAccessManager(PKCS11AccessMethod method) throws Exception {
+
+        try {
+
+            if (method == PKCS11AccessMethod.TUBITAK) {
+                if (smartCardAccessManager_tubitak == null) {
+                    try {
+                        smartCardAccessManager_tubitak = new SmartCardAccessTubitakImpl();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+
+            //smartCardAccessManager_tubitak = new SmartCardAccessTubitakImpl().getInstance();
             return smartCardAccessManager_tubitak;
+
+        } catch (Exception e) {
+
+            throw new Exception("The provided PKCS11 Access Method is not available");
         }
-         
-        throw new Exception("The provided PKCS11 Access Method is not available");
     }
 }

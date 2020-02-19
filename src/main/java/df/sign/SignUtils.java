@@ -71,10 +71,10 @@ public class SignUtils {
         ArrayList<CertificateData> signList = new ArrayList<CertificateData>();
 
         for (CertificateData certificateData : certificateDataList) {
-            if (X509Utils.checkIsNonRepudiation(certificateData.cert)) {
+            if (X509Utils.checkIsNonRepudiation(certificateData.cert.asX509Certificate())) {
                 nonRepudList.add(certificateData);
             }
-            if (X509Utils.checkIsForSigning(certificateData.cert)) {
+            if (X509Utils.checkIsForSigning(certificateData.cert.asX509Certificate())) {
                 signList.add(certificateData);
             }
         }
@@ -255,7 +255,7 @@ public class SignUtils {
         if (CN.contains("/")) {
             CN = CN.split("/")[0].substring(1);
         }
-
+        ret = CN;
         String O = "Not Defined";
         if (certificateSubject.contains("O=")) {
             O = certificateSubject.substring(certificateSubject.indexOf("O=") + 2);
@@ -267,8 +267,8 @@ public class SignUtils {
             if (O.contains("/")) {
                 O = O.split("/")[0];
             }
+            ret = CN + "    Org:" + O;
         }
-        ret = CN + "    Org:" + O;
         return ret;
     }
 

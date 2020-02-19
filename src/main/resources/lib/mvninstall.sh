@@ -1,0 +1,27 @@
+mvn install:install-file -Dfile=./akiscif-2.6.1.jar -DgroupId=com.esigner -DartifactId=akiscif -Dversion=2.6.1 -Dpackaging=jar
+mvn install:install-file -Dfile=./jna-4.2.1.jar -DgroupId=com.esigner -DartifactId=jna -Dversion=4.2.1 -Dpackaging=jar
+mvn install:install-file -Dfile=./asn1rt-6.6.4.jar -DgroupId=com.esigner -DartifactId=asn1rt -Dversion=6.6.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./jcifs-1.3.1.jar -DgroupId=com.esigner -DartifactId=jcifs -Dversion=1.3.1 -Dpackaging=jar
+mvn install:install-file -Dfile=./slf4j-jdk14-1.6.6.jar -DgroupId=com.esigner -DartifactId=slf4j-jdk14 -Dversion=1.6.6 -Dpackaging=jar
+mvn install:install-file -Dfile=./slf4j-api-1.6.6.jar -DgroupId=com.esigner -DartifactId=slf4j-api -Dversion=1.6.6 -Dpackaging=jar
+mvn install:install-file -Dfile=./sqlite-jdbc-3.7.2.jar -DgroupId=com.esigner -DartifactId=sqlite-jdbc -Dversion=3.7.2 -Dpackaging=jar
+mvn install:install-file -Dfile=./axis-1.4.jar -DgroupId=com.esigner -DartifactId=axis -Dversion=1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ccid-1.1.5.jar -DgroupId=com.esigner -DartifactId=ccid -Dversion=1.1.5 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-pades-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-pades -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-turkcellmssprovider-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-turkcellmssprovider -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-aveamssprovider-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-aveamssprovider -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-mssclient-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-mssclient -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-xmlsignature-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-xmlsignature -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-asic-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-asic -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-asn-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-asn  -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-certstore-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-certstore  -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-certvalidation-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-certvalidation -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-cmssignature-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-cmssignature -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-common-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-common  -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-crypto-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-crypto -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-crypto-gnuprovider-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-crypto-gnuprovider -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-crypto-sunprovider-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-crypto-sunprovider -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-infra-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-infra  -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-signature-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-signature  -Dversion=2.2.1.4 -Dpackaging=jar
+mvn install:install-file -Dfile=./ma3api-smartcard-2.2.1.4.jar -DgroupId=com.esigner -DartifactId=ma3api-smartcard -Dversion=2.2.1.4 -Dpackaging=jar
+

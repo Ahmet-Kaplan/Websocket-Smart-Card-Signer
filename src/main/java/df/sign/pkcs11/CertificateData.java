@@ -17,8 +17,8 @@
  */
 package df.sign.pkcs11;
 
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import tr.gov.tubitak.uekae.esya.api.asn.x509.ECertificate;
 
 public class CertificateData {
     public String id;
@@ -26,7 +26,7 @@ public class CertificateData {
     public long slot;
     public byte[] certID;
     public byte[] certLABEL;
-    public X509Certificate cert;
+    public ECertificate cert;
     public ArrayList<CertificateData> alternativeCertificateList = new ArrayList<CertificateData>();
 
     @Override

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>df</groupId>
     <artifactId>websocket_smartcard_signer</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -14,28 +14,10 @@
     <build>
         <finalName>websocket_smartcard_signer</finalName>
         <plugins>
-            <!--            <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <addMavenDescriptor>false</addMavenDescriptor>
-                    </archive>
-                </configuration>
-            </plugin>-->
-         
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.2.0</version>
-                <!--                <executions>
-                    <execution>
-                        <id>make-a-jar</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>-->
                 <configuration>
                     <archive>
                         <manifest>
@@ -100,7 +82,7 @@
                 </configuration>
             </plugin>
             
-            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jarsigner-plugin</artifactId>
                 <version>3.0.0</version>
@@ -118,7 +100,7 @@
                     <storepass>password</storepass>
                     <keypass>password</keypass>
                 </configuration>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 
@@ -186,16 +168,6 @@
             <version>5.5.13.1</version>
         </dependency>
         <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>4.5.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.xipki.iaik</groupId>
-            <artifactId>sunpkcs11-wrapper</artifactId>
-            <version>1.4.6</version>
-        </dependency>
-        <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.2</version>
@@ -206,158 +178,115 @@
             <version>3.6</version>
         </dependency>
         <dependency>
-            <groupId>org.pkcs11</groupId>
-            <artifactId>jacknji11</artifactId>
-            <version>1.1</version>
+            <groupId>com.esigner</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.6.6</version>
+            <type>jar</type>
+        <scope>provided</scope>
         </dependency>
         <dependency>
-			<groupId>slf4j-jdk14</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.6.6</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/slf4j-jdk14-1.6.6.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-asic</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-asic-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-asic</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-asn</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-asn-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-certvalidation</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-certvalidation-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-asn</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-certvalidation</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-cmssignature</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-cmssignature-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-cmssignature</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-common</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-common-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-crypto</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-crypto-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-crypto-gnuprovider</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-crypto-gnuprovider-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-sunprovider</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-crypto-sunprovider-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-infra</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-infra-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-common</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-crypto</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-crypto-gnuprovider</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-crypto-sunprovider</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-infra</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-cerstore</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-certstore-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-mssclient</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-mssclient-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-pades</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-pades-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-certstore</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-mssclient</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-pades</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-signature</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-signature-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-signature</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-smartcard</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-smartcard-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>ma3api-xmlsignature</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/ma3api-xmlsignature-${signer-version}.jar</systemPath>
-			<version>${signer-version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>akiscif</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/akiscif-2.6.1.jar</systemPath>
-			<version>2.6.1</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-smartcard</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>ma3api-xmlsignature</artifactId>
+            <version>${signer-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>akiscif</artifactId>
+            <version>2.6.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>jna</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/jna-4.2.1.jar</systemPath>
-			<version>4.2.1</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>jna</artifactId>
+            <version>4.2.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>asn1rt</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/asn1rt-6.6.4.jar</systemPath>
-			<version>6.6.4</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>asn1rt</artifactId>
+            <version>6.6.4</version>
+        </dependency>
 
-		<dependency>
-			<groupId>com.esigner</groupId>
-			<artifactId>jcifs</artifactId>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/src/main/resources/lib/jcifs-1.3.1.jar</systemPath>
-			<version>1.3.1</version>
-		</dependency>
+        <dependency>
+            <groupId>com.esigner</groupId>
+            <artifactId>jcifs</artifactId>
+            <version>1.3.1</version>
+        </dependency>
     </dependencies>
 </project>

@@ -64,28 +64,28 @@ public class pdfSign {
         }
 
         if (dnRestrictedSignatureName.length() != 0) {
-            String cfCert = X509Utils.getCFFromCertSubject(certData.cert.getSubjectDN().getName());
+            String cfCert = X509Utils.getCFFromCertSubject(certData.cert.asX509Certificate().getSubjectDN().getName());
             if (!cfCert.equals(dnRestrictedSignatureName.toUpperCase(new Locale("tr", "TR")))) {
-                if (!certData.cert.getSubjectDN().getName().contains(dnRestrictedSignatureName.toUpperCase(new Locale("tr", "TR")))) {
+                if (!certData.cert.asX509Certificate().getSubjectDN().getName().contains(dnRestrictedSignatureName.toUpperCase(new Locale("tr", "TR")))) {
                     return "ERROR : SIGNATURE AVAILABLE ONLY FOR USER " + dnRestrictedSignatureName + "\nThe selected certificate is valid for user " + cfCert;
 
                 }
             }
         }
 
-        if (!X509Utils.checkValidity(certData.cert, null)) {
+        if (!X509Utils.checkValidity(certData.cert.asX509Certificate(), null)) {
             //int ret = JOptionPane.showConfirmDialog(null, "THE CERTIFICATE IS EXPIRED\nPROCEEDS ANYWAY?", "WARNING", JOptionPane.YES_NO_OPTION);
             //if(ret != JOptionPane.YES_OPTION)
             return "ERROR : THE CERTIFICATE IS EXPIRED";
         }
 
-        if (X509Utils.checkIsSelfSigned(certData.cert)) {
+        if (X509Utils.checkIsSelfSigned(certData.cert.asX509Certificate())) {
             //int ret = JOptionPane.showConfirmDialog(null, "THE CERTIFICATE IS SELF SIGNED\nPROCEEDS ANYWAY?", "WARNING", JOptionPane.YES_NO_OPTION);
             //if(ret != JOptionPane.YES_OPTION)
             return "ERROR : THE CERTIFICATE IS SELF SIGNED";
         }
 
-        if (X509Utils.checkIsRevoked(certData.cert)) {
+        if (X509Utils.checkIsRevoked(certData.cert.asX509Certificate())) {
             //int ret = JOptionPane.showConfirmDialog(null, "THE CERTIFICATE IS REVOKED\nPROCEEDS ANYWAY?", "WARNING", JOptionPane.YES_NO_OPTION);
             //if(ret != JOptionPane.YES_OPTION){
             return "ERROR : THE CERTIFICATE IS REVOKED";

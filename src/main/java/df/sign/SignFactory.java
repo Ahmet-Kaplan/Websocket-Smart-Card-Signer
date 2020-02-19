@@ -26,7 +26,7 @@ import df.sign.pkcs11.SmartCardAccessManagerFactory.PKCS11AccessMethod;
 
 public class SignFactory {
 
-    public static PKCS11AccessMethod pkcs11AccessMethod = SmartCardAccessManagerFactory.PKCS11AccessMethod.IAIK;
+    public static PKCS11AccessMethod pkcs11AccessMethod = SmartCardAccessManagerFactory.PKCS11AccessMethod.TUBITAK;
 
     private static SignEngine signEngine = null;
     private static pdfSign pdfsign = null;

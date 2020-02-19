@@ -56,10 +56,10 @@ public class getCertificates {
                 certParams = Json.createObjectBuilder();
                 certParams.add("id", certItem.id);
                 certParams.add("Label", new String(SignUtils.base64Encode(certItem.certLABEL), "UTF-8"));
-                certParams.add("SubjectDN", certItem.cert.getSubjectDN().getName());
-                certParams.add("IssuerDN", certItem.cert.getIssuerDN().getName());
-                certParams.add("StartDate", certItem.cert.getNotBefore().toString());
-                certParams.add("ExpiredDate", certItem.cert.getNotAfter().toString());
+                certParams.add("SubjectDN", certItem.cert.asX509Certificate().getSubjectDN().getName());
+                certParams.add("IssuerDN", certItem.cert.asX509Certificate().getIssuerDN().getName());
+                certParams.add("StartDate", certItem.cert.asX509Certificate().getNotBefore().toString());
+                certParams.add("ExpiredDate", certItem.cert.asX509Certificate().getNotAfter().toString());
                 certParams.add("SerialNumber", certItem.cert.getSerialNumber());
                 jsonArrayBuilder.add(certParams);
             }

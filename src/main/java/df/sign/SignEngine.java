@@ -29,19 +29,19 @@ import df.sign.datastructure.Data;
 import df.sign.datastructure.SignConfig;
 import df.sign.pdf.PDFManager;
 import df.sign.pkcs11.CertificateData;
-import df.sign.pkcs11.SmartCardAccessI;
+import df.sign.pkcs11.impl.tubitak.SmartCardAccessTubitakImpl;
 
 public class SignEngine {
     
     ArrayList<Data> dataToSignList = null;
     ArrayList<Data> dataSignedList = null;
     
-    private SmartCardAccessI smartCardAccessManager = null;
+    private SmartCardAccessTubitakImpl smartCardAccessManager = null;
     public String[] dllList = null;
     public ArrayList<CertificateData> certificateList = null;
     public boolean useNTPTime = false;
     
-    public SignEngine(SmartCardAccessI smartCardAccessManager, String[] dllList) throws Exception{
+    public SignEngine(SmartCardAccessTubitakImpl smartCardAccessManager, String[] dllList) throws Exception{
         if(dllList == null || dllList.length==0)
             throw new Exception("Please provide one or more libraries to access the smart card");
         this.dllList = dllList;
@@ -127,7 +127,7 @@ public class SignEngine {
                             dataToHash = tmp;
                     } else if(PDFManager.isAPdf(unsignedContent) && !signConfig.signPdfAsP7m){
                         signConfig.saveAsPDF = true;
-                        pdfManager = new PDFManager(unsignedContent, certData.cert);
+                        pdfManager = new PDFManager(unsignedContent, certData.cert.asX509Certificate());
                         pdfManager.setDateTime(timeNow);
                         if(signConfig.visibleSignature)
                             pdfManager.setVisibleSignature(signConfig.pageNumToSign, signConfig.signPosition);
@@ -136,19 +136,19 @@ public class SignEngine {
                     }
                     
                     byte[] hash = SignUtils.calculateHASH(digestOIDToUse, dataToHash);
-                    byte[] hashToSign = SignUtils.calculateHASH(digestOIDToUse, CMSSignedDataWrapper.getDataToSign(hash, timeNow, certData.cert));
+                    byte[] hashToSign = SignUtils.calculateHASH(digestOIDToUse, CMSSignedDataWrapper.getDataToSign(hash, timeNow, certData.cert.asX509Certificate()));
                     hashToSign = CMSSignedDataWrapper.getDigestInfoToSign(digestOIDToUse, hashToSign);
                     
-                    byte[] signature = smartCardAccessManager.signData(sessionId, certData.certID, certData.certLABEL, hashToSign);
+                    byte[] signature = smartCardAccessManager.signData( certData, hashToSign);
                     
                     byte[] signedContent = null;
                     if(pdfManager == null){
-                        signedContent = PKCS7Manager.buildPKCS7(digestOIDToUse, unsignedContent, certData.cert, signature, hash, timeNow);
+                        signedContent = PKCS7Manager.buildPKCS7(digestOIDToUse, unsignedContent, certData.cert.asX509Certificate(), signature, hash, timeNow);
                     }else{
                         pdfManager.buildSignedPDF(digestOIDToUse, signature, hash);
                         int csize = pdfManager.getContentsSize();
                         //The first signature is used only to evaluate csize, then the second signature is applied with the correct csize
-                        pdfManager = new PDFManager(unsignedContent, certData.cert);
+                        pdfManager = new PDFManager(unsignedContent, certData.cert.asX509Certificate());
                         pdfManager.setDateTime(timeNow);
                         if(signConfig.visibleSignature)
                             pdfManager.setVisibleSignature(signConfig.pageNumToSign, signConfig.signPosition);
@@ -157,9 +157,9 @@ public class SignEngine {
                         dataToHash = pdfManager.getDataToHashAndSign();
                         hash = SignUtils.calculateHASH(digestOIDToUse, dataToHash);
                         hashToSign = hash;
-                        hashToSign = SignUtils.calculateHASH(digestOIDToUse, CMSSignedDataWrapper.getDataToSign(hash, timeNow, certData.cert));
+                        hashToSign = SignUtils.calculateHASH(digestOIDToUse, CMSSignedDataWrapper.getDataToSign(hash, timeNow, certData.cert.asX509Certificate()));
                         hashToSign = CMSSignedDataWrapper.getDigestInfoToSign(digestOIDToUse, hashToSign);
-                        signature = smartCardAccessManager.signData(sessionId, certData.certID, certData.certLABEL, hashToSign);
+                        signature = smartCardAccessManager.signData( certData, hashToSign);
                         
                         signedContent = pdfManager.buildSignedPDF(digestOIDToUse, signature, hash);
                         new PDFManager(signedContent, null).isCorrectlySigned();
@@ -169,7 +169,7 @@ public class SignEngine {
                 }
             
             } finally {
-                smartCardAccessManager.closeSession(sessionId);
+                smartCardAccessManager.closeSession();
             }
         } finally {
             smartCardAccessManager.disconnectLibrary();
@@ -195,19 +195,19 @@ public class SignEngine {
                 byte[] dataTest = "test".getBytes();
                 byte[] hashToSign = SignUtils.calculateHASH(digestOIDToUse, dataTest);
                 hashToSign = CMSSignedDataWrapper.getDigestInfoToSign(digestOIDToUse, hashToSign);
-                byte[] signature = smartCardAccessManager.signData(sessionId, certDataToCheck.certID, certDataToCheck.certLABEL, hashToSign);
+                byte[] signature = smartCardAccessManager.signData( certDataToCheck, hashToSign);
                 java.security.Signature sig = java.security.Signature.getInstance("SHA256WithRSA", "BC");
-                sig.initVerify(certDataToCheck.cert.getPublicKey());
+                sig.initVerify(certDataToCheck.cert.asX509Certificate().getPublicKey());
                 sig.update(dataTest);
                 if(sig.verify(signature))
                     return certDataToCheck;
             }catch(Exception ex) {ex.printStackTrace();} finally {
-                smartCardAccessManager.closeSession(sessionId);
+                smartCardAccessManager.closeSession();
                 smartCardAccessManager.disconnectLibrary();
             }
         }
         
-        throw new Exception("Impossible to perform a valid signature with the following certificate and libraries\nCertificate: '" + certData.cert.getSubjectDN().getName() + "'\nLibraries:\n" + errorMsgLibraryList);
+        throw new Exception("Impossible to perform a valid signature with the following certificate and libraries\nCertificate: '" + certData.cert.asX509Certificate().getSubjectDN().getName() + "'\nLibraries:\n" + errorMsgLibraryList);
     }
     
     public SignEngine loadSmartCardCertificateList(boolean readAllCertificates){
@@ -239,7 +239,7 @@ public class SignEngine {
                 }
                 
                 for(CertificateData cert : certInSlotList){
-                    cert.id = certList.size() + ": " + SignUtils.getIDFromSubject(cert.cert.getSubjectDN().getName());
+                    cert.id = certList.size() + ": " + cert.cert.asX509Certificate().getSubjectDN().getName(); // SignUtils.getIDFromSubject(cert.cert.getSubjectDN().getName());
                     cert.dll = dllFullPath;
                     cert.slot = slot;
                     int certIndex = certList.indexOf(cert);
